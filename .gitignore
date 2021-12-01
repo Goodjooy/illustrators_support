@@ -1,0 +1,7 @@
+/target
+
+Rocket.toml
+.env
+build.rs
+
+.vscode
