@@ -1,17 +1,31 @@
-use database::connect_db;
+use crate::controllers::illustrator::IllustratorController;
+use std::{collections::HashMap};
 
+use controllers::{user::UserController, Controller};
+use database::Database;
+use rocket::fs::FileServer;
 
 #[macro_use]
 extern crate rocket;
-extern crate serde;
 extern crate sea_orm;
+extern crate serde;
 
-mod entity;
-mod database;
 mod controllers;
+mod data_containers;
+mod database;
+mod entity;
+mod utils;
 
 #[rocket::launch]
 async fn launch() -> _ {
     rocket::build()
-    .manage(connect_db().await.expect("Can not connect to database"))
+        .manage(
+            Database::connect_db()
+                .await
+                .expect("Can not connect to database"),
+        )
+        .manage(std::sync::Mutex::new(HashMap::<uuid::Uuid, i64>::new()))
+        .mount("/images", FileServer::from("./SAVES"))
+        .mount(UserController::base(), UserController::routes())
+        .mount(IllustratorController::base(), IllustratorController::routes())
 }

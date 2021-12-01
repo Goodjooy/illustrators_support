@@ -1,6 +1,6 @@
 # Illustrators Support 画师包养计划
 
-post /user/auth login 
+post /user/login 
 request
 ```json
 {

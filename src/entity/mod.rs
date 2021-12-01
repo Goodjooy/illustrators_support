@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod illustrator_acts;
 pub mod illustrator_wants;
 pub mod illustrators;
 pub mod users;

@@ -1,3 +1,6 @@
+pub mod user;
+pub mod illustrator;
+
 pub trait Controller {
     fn routes() -> Vec<rocket::Route> {
         vec![]

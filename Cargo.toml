@@ -2,7 +2,7 @@
 name = "illustrators_support"
 version = "0.1.0"
 edition = "2021"
-author="Frozen String"
+author=["Frozen String"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -46,3 +46,6 @@ default-features = false
 # regex currently requires the standard library, you must re-enable it.
 features = ["std","unicode-perl"]
 
+[dependencies.uuid]
+version = "0.8"
+features = ["serde", "v4"] 

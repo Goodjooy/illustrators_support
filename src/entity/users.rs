@@ -23,6 +23,10 @@ impl Related<super::illustrator_wants::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::IllustratorWants.def()
     }
+
+    fn via() -> Option<RelationDef> {
+        Some(Relation::IllustratorWants.def().rev())
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

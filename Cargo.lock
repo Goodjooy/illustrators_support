@@ -792,6 +792,7 @@ dependencies = [
  "sea-orm",
  "serde",
  "serde_json",
+ "uuid",
 ]
 
 [[package]]
