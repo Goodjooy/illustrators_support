@@ -1,13 +1,4 @@
-use std::{
-    collections::HashMap,
-    path::Path,
-    str::FromStr,
-    sync::{Mutex, RwLock},
-};
-
-use rocket::{fs::TempFile, serde::json::Json, State};
-use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
-use uuid::Uuid;
+use std::{collections::HashMap, path::Path, sync::Mutex};
 
 use crate::{
     data_containers::{
@@ -18,7 +9,11 @@ use crate::{
     database::Database,
     entity::{illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
+    utils::multpart::MultPartFile,
 };
+
+use rocket::{serde::json::Json, State};
+use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 
 const SAVE_PATH: &str = "./SAVES";
 
@@ -28,7 +23,8 @@ crate::generate_controller!(
     new_illustrator,
     add_art,
     illustrator_all,
-    illustrator_detial
+    illustrator_detial,
+    want_illustrator
 );
 
 #[post("/new", data = "<input>")]
@@ -36,8 +32,8 @@ async fn new_illustrator(
     _auth: UserLogin,
     input: Json<IllustratorNew>,
     db: &State<Database>,
-    ill_collect: &State<RwLock<HashMap<Uuid, i64>>>,
-) -> RResult<Uuid> {
+    ill_collect: &State<Mutex<HashMap<String, i64>>>,
+) -> RResult<String> {
     let ill_new = (*input).clone();
     let ill_new: illustrators::ActiveModel = ill_new.into();
 
@@ -49,50 +45,35 @@ async fn new_illustrator(
     );
 
     let ident = uuid::Uuid::new_v4();
-    let mut mut_ill = to_rresult!(rs, ill_collect.write());
-    mut_ill.insert(ident.clone(), res.last_insert_id);
+    let mut mut_ill = to_rresult!(rs, ill_collect.lock());
+    mut_ill.insert(ident.clone().to_string(), res.last_insert_id);
 
-    RResult::ok(ident)
+    RResult::ok(ident.to_string())
 }
 #[post("/add_arts/<ident>", data = "<file>")]
 async fn add_art(
     _auth: UserLogin,
     ident: String,
-    mut file: TempFile<'_>,
+    file: MultPartFile<'_>,
     db: &State<Database>,
-    ill_collect: &State<Mutex<HashMap<Uuid, i64>>>,
-) -> RResult<()> {
-    if let Some(name) = file.name() {
-        let ext = name
-            .split(".")
-            .last()
-            .and_then(|s| Some(format!(".{}", s)))
-            .unwrap_or_default();
-        let new_name = Uuid::new_v4().to_string();
-        let path = format!("{}{}", new_name, ext);
+    ill_collect: &State<Mutex<HashMap<String, i64>>>,
+) -> RResult<&'static str> {
+    let iid = {
+        let map = to_rresult!(rs, ill_collect.lock());
+        *to_rresult!(op, map.get(&ident), "Ident Not Found")
+    };
 
-        let _res = to_rresult!(
-            rs,
-            file.move_copy_to(Path::new(SAVE_PATH).join(&path)).await
-        );
+    let iart = illustrator_acts::ActiveModel {
+        iid: Set(iid),
+        pic: Set(file.filename().to_string()),
+        ..Default::default()
+    };
 
-        let ident = to_rresult!(rs, Uuid::from_str(&ident));
-        let iid = {
-            let map = to_rresult!(rs, ill_collect.lock());
-            *to_rresult!(op, map.get(&ident), "Ident Not Found")
-        };
+    let _res = to_rresult!(rs, iart.insert(db.unwarp()).await);
 
-        let iart = illustrator_acts::ActiveModel {
-            iid: Set(iid),
-            pic: Set(path),
-            ..Default::default()
-        };
+    let _res = to_rresult!(rs, file.save_to(Path::new(SAVE_PATH)).await);
 
-        let _res = to_rresult!(rs, iart.insert(db.unwarp()).await);
-        RResult::ok(())
-    } else {
-        RResult::err("file with out name")
-    }
+    RResult::ok("Upload File success")
 }
 
 #[get("/all")]
@@ -135,11 +116,34 @@ async fn illustrator_detial(
         .next(),
         "not found illustrator"
     );
-    let mut tc = Condition::any();
-    for uid in wants {
-        tc = tc.add(users::Column::Id.eq(uid.uid));
-    }
-    let wants = to_rresult!(rs, users::Entity::find().filter(tc).all(db.unwarp()).await);
+
+    let wants = if wants.len() == 0 {
+        vec![]
+    } else {
+        let mut tc = Condition::any();
+        for uid in wants {
+            tc = tc.add(users::Column::Id.eq(uid.uid));
+        }
+        to_rresult!(rs, users::Entity::find().filter(tc).all(db.unwarp()).await)
+    };
 
     RResult::ok((ill_src, arts, wants).into())
+}
+
+#[post("/<id>")]
+async fn want_illustrator(auth: UserLogin, id: i64, db: &State<Database>) -> RResult<String> {
+    if let Some(ill) = to_rresult!(
+        rs,
+        illustrators::Entity::find_by_id(id).one(db.unwarp()).await
+    ) {
+        let want = illustrator_wants::ActiveModel {
+            uid: Set(to_rresult!(op, auth.id, "Bad Auth")),
+            iid: Set(ill.id),
+            ..Default::default()
+        };
+        to_rresult!(rs, want.insert(db.unwarp()).await);
+        RResult::ok("添加想要成功".to_string())
+    } else {
+        RResult::err("目标画师不存在")
+    }
 }

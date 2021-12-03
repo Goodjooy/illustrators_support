@@ -24,7 +24,7 @@ async fn launch() -> _ {
                 .await
                 .expect("Can not connect to database"),
         )
-        .manage(std::sync::Mutex::new(HashMap::<uuid::Uuid, i64>::new()))
+        .manage(std::sync::Mutex::new(HashMap::<String, i64>::new()))
         .mount("/images", FileServer::from("./SAVES"))
         .mount(UserController::base(), UserController::routes())
         .mount(IllustratorController::base(), IllustratorController::routes())

@@ -31,7 +31,7 @@ impl Database {
 
         let mut ops = ConnectOptions::new(db_url);
         ops.max_connections(max_conn)
-            .sqlx_logging(true)
+            //.sqlx_logging(true)
             .min_connections(2);
 
         let db = sea_orm::Database::connect(ops).await?;

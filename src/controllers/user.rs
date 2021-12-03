@@ -24,8 +24,9 @@ generate_controller!(UserController, "/user", user_login, user_new);
 impl<'r> FromRequest<'r> for UserLogin {
     async fn from_request(request: &'r rocket::Request<'_>) -> Outcome<Self, Self::Error> {
         let jar = request.cookies();
-        if let Some(cookie) = jar.get(COOKIE_NAME) {
-            let au = RResult::from_result(serde_json::from_str::<UserLogin>(cookie.value()));
+        if let Some(cookie) = jar.get_private(COOKIE_NAME) {
+            let value=cookie.value();
+            let au = RResult::from_result(serde_json::from_str::<UserLogin>(value));
             au.into_outcome(Status::Unauthorized)
         } else {
             Outcome::Failure((Status::Unauthorized, "No auth info".to_string()))
