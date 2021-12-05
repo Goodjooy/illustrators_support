@@ -51,6 +51,13 @@ impl<const S: usize> Into<String> for LenLimitedString<S> {
         self.data
     }
 }
+
+impl<const S: usize> AsRef<str> for LenLimitedString<S>{
+    fn as_ref(&self) -> &str {
+        &self.data
+    }
+}
+
 impl<const S: usize> From<&LenLimitedString<S>> for LenLimitedString<S> {
     fn from(d: &LenLimitedString<S>) -> Self {
         Self::new(d.data.clone())

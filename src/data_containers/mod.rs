@@ -3,6 +3,7 @@ use crate::database::Database;
 pub mod r_result;
 pub mod users;
 pub mod illustrator;
+pub mod admin;
 
 #[rocket::async_trait]
 pub trait SelectBy<T>{
