@@ -1,18 +1,18 @@
-use crate::{data_containers::TryIntoWithDatabase, database::Database};
+use crate::{data_containers::TryIntoWithDatabase, database::Database, utils::RangeLimitString};
 use std::env;
 
 use rocket::http::Cookie;
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
 
-use crate::{entity, utils::limit_string::LenLimitedString};
+use crate::entity;
 
 use super::SelectBy;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserLogin {
     pub id: Option<i64>,
-    pub name: LenLimitedString<32>,
+    pub name: RangeLimitString<4, 32>,
     pub qq: i64,
 }
 #[rocket::async_trait]
@@ -27,7 +27,7 @@ impl SelectBy<entity::users::Model> for UserLogin {
             entity::users::Entity::find()
                 .filter(
                     Condition::all()
-                        .add(entity::users::Column::Name.eq(&*self.name))
+                        .add(entity::users::Column::Name.eq(self.name.as_ref().as_str()))
                         .add(entity::users::Column::Qq.eq(self.qq)),
                 )
                 .one(db.unwarp())
@@ -40,7 +40,7 @@ impl From<entity::users::Model> for UserLogin {
     fn from(src: entity::users::Model) -> Self {
         Self {
             id: Some(src.id),
-            name: src.name.try_into().unwrap(),
+            name: RangeLimitString::try_from(src.name).unwrap(),
             qq: src.qq,
         }
     }
@@ -54,9 +54,9 @@ impl UserLogin {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserNew {
-    pub name: LenLimitedString<32>,
+    pub name: RangeLimitString<4, 32>,
     pub qq: i64,
-    invite_code: LenLimitedString<36>,
+    invite_code: RangeLimitString<8, 36>,
 }
 #[rocket::async_trait]
 impl TryIntoWithDatabase<entity::users::ActiveModel> for UserNew {

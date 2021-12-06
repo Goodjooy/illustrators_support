@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::{illustrator_acts, illustrators, users},
-    utils::limit_string::LenLimitedString,
+    utils::{MaxLimitString, RangeLimitString},
 };
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct IllustratorNew {
-    name: LenLimitedString<32>,
-    home: LenLimitedString<256>,
+    name: RangeLimitString<1, 32>,
+    home: MaxLimitString<256>,
 }
 
 impl Into<illustrators::ActiveModel> for IllustratorNew {

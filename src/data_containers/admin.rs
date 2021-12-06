@@ -2,7 +2,7 @@ use crypto::digest::Digest;
 
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 
-use crate::{database::Database, entity::admins, utils::limit_string::LenLimitedString};
+use crate::{database::Database, entity::admins, utils::RangeLimitString};
 
 fn crypto_password(paswd: &str) -> String {
     let mut hasher = crypto::sha3::Sha3::keccak256();
@@ -13,8 +13,8 @@ fn crypto_password(paswd: &str) -> String {
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct AdminNew {
     pub super_identify: String,
-    pub name: LenLimitedString<32>,
-    pub password: LenLimitedString<16>,
+    pub name: RangeLimitString<1, 32>,
+    pub password: RangeLimitString<6, 16>,
 }
 #[rocket::async_trait]
 impl super::TryIntoWithDatabase<admins::ActiveModel> for AdminNew {
@@ -36,14 +36,14 @@ impl super::TryIntoWithDatabase<admins::ActiveModel> for AdminNew {
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Admin {
     pub aid: Option<i64>,
-    pub name: LenLimitedString<32>,
-    pub password: LenLimitedString<64>,
+    pub name: RangeLimitString<1, 32>,
+    pub password: RangeLimitString<6, 64>,
 }
 #[rocket::async_trait]
 impl super::SelectBy<admins::Model> for Admin {
     async fn select_by(self, db: &Database) -> Result<Option<admins::Model>, sea_orm::DbErr> {
         let condition = Condition::all()
-            .add(admins::Column::Name.eq(self.name.as_ref()))
+            .add(admins::Column::Name.eq(self.name.as_ref().as_str()))
             .add(admins::Column::Password.eq(crypto_password(self.password.as_ref())));
 
         admins::Entity::find()
@@ -57,8 +57,8 @@ impl From<admins::Model> for Admin {
     fn from(m: admins::Model) -> Self {
         Self {
             aid: Some(m.id),
-            name: m.name.try_into().unwrap(),
-            password: m.password.try_into().unwrap(),
+            name: RangeLimitString::try_from(m.name).unwrap(),
+            password: RangeLimitString::try_from(m.password).unwrap(),
         }
     }
 }
