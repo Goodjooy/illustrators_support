@@ -44,6 +44,18 @@ impl<T: Serialize> RResult<T> {
     }
 }
 
+impl <T:Serialize> From<Result<T,String>> for RResult<T> {
+    fn from(r: Result<T,String>) -> Self {
+        Self::from_result(r)
+    }
+}
+
+impl <T:Serialize>From<Option<T>> for RResult<T> {
+    fn from(op: Option<T>) -> Self {
+        Self::from_option(op, "None Result")
+    }
+}
+
 impl<T: Serialize> Into<Result<T, String>> for RResult<T> {
     fn into(self) -> Result<T, String> {
         match self.err {

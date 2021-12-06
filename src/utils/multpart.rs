@@ -68,7 +68,7 @@ impl<'r> FromData<'r> for MultPartFile<'r> {
         if let Some(ext) = ext {
             let res = Self {
                 data: data.open(limit),
-                filename: format!("{}.{}", Uuid::new_v4().to_string(), ext),
+                filename: Uuid::new_v4().to_string(),
                 file_ext: ext,
             };
             rocket::data::Outcome::Success(res)
@@ -94,8 +94,8 @@ impl MultPartFile<'_> {
         let res = self.data.into_file(path.as_ref().join(self.filename)).await;
         res
     }
-    pub fn filename(&self) -> &str {
-        &self.filename
+    pub fn filename(&self) -> String {
+        format!("{}.{}",self.filename,self.file_ext())
     }
     pub fn file_ext(&self) -> &str {
         &self.file_ext

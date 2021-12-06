@@ -1,6 +1,6 @@
 use crypto::digest::Digest;
-use rocket::futures::stream::select_all;
-use sea_orm::{ColumnTrait, Condition, EntityTrait, Set, QueryFilter};
+
+use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 
 use crate::{database::Database, entity::admins, utils::limit_string::LenLimitedString};
 
@@ -12,9 +12,9 @@ fn crypto_password(paswd: &str) -> String {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct AdminNew {
-    super_identify: String,
-    name: LenLimitedString<32>,
-    password: LenLimitedString<16>,
+    pub super_identify: String,
+    pub name: LenLimitedString<32>,
+    pub password: LenLimitedString<16>,
 }
 #[rocket::async_trait]
 impl super::TryIntoWithDatabase<admins::ActiveModel> for AdminNew {
@@ -35,9 +35,9 @@ impl super::TryIntoWithDatabase<admins::ActiveModel> for AdminNew {
 }
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Admin {
-    aid: Option<i64>,
-    name: LenLimitedString<32>,
-    password: LenLimitedString<16>,
+    pub aid: Option<i64>,
+    pub name: LenLimitedString<32>,
+    pub password: LenLimitedString<64>,
 }
 #[rocket::async_trait]
 impl super::SelectBy<admins::Model> for Admin {
@@ -50,5 +50,15 @@ impl super::SelectBy<admins::Model> for Admin {
             .filter(condition)
             .one(db.unwarp())
             .await
+    }
+}
+
+impl From<admins::Model> for Admin {
+    fn from(m: admins::Model) -> Self {
+        Self {
+            aid: Some(m.id),
+            name: m.name.try_into().unwrap(),
+            password: m.password.try_into().unwrap(),
+        }
     }
 }

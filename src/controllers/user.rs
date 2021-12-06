@@ -1,8 +1,8 @@
 use crate::data_containers::TryIntoWithDatabase;
 use rocket::{
-    http::{CookieJar, Status},
-    request::{FromRequest, Outcome},
-    serde::json::Json, State,
+    http::{CookieJar},
+    serde::json::Json,
+    State,
 };
 use sea_orm::ActiveModelTrait;
 
@@ -20,20 +20,7 @@ const COOKIE_NAME: &str = "__uauth__";
 
 generate_controller!(UserController, "/user", user_login, user_new);
 
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for UserLogin {
-    async fn from_request(request: &'r rocket::Request<'_>) -> Outcome<Self, Self::Error> {
-        let jar = request.cookies();
-        if let Some(cookie) = jar.get_private(COOKIE_NAME) {
-            let value=cookie.value();
-            let au = RResult::from_result(serde_json::from_str::<UserLogin>(value));
-            au.into_outcome(Status::Unauthorized)
-        } else {
-            Outcome::Failure((Status::Unauthorized, "No auth info".to_string()))
-        }
-    }
-    type Error = String;
-}
+crate::from_cooke!(COOKIE_NAME, UserLogin);
 
 #[post("/login", data = "<login_info>")]
 async fn user_login(

@@ -1,7 +1,7 @@
 use crate::controllers::illustrator::IllustratorController;
 use std::{collections::HashMap};
 
-use controllers::{user::UserController, Controller};
+use controllers::{user::UserController, Controller, admin::AdminController};
 use database::Database;
 use rocket::fs::FileServer;
 
@@ -28,4 +28,5 @@ async fn launch() -> _ {
         .mount("/images", FileServer::from("./SAVES"))
         .mount(UserController::base(), UserController::routes())
         .mount(IllustratorController::base(), IllustratorController::routes())
+        .mount(AdminController::base(), AdminController::routes())
 }

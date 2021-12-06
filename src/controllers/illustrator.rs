@@ -65,7 +65,7 @@ async fn add_art(
 
     let iart = illustrator_acts::ActiveModel {
         iid: Set(iid),
-        pic: Set(file.filename().to_string()),
+        pic: Set(file.filename()),
         ..Default::default()
     };
 
