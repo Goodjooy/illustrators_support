@@ -6,8 +6,6 @@ use std::{
     ops::Deref,
 };
 
-use crate::main;
-
 use super::measureable::Measurable;
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]

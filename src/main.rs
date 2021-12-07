@@ -1,9 +1,10 @@
 use crate::controllers::illustrator::IllustratorController;
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
-use controllers::{user::UserController, Controller, admin::AdminController};
+use controllers::{admin::AdminController, user::UserController, Controller};
 use database::Database;
 use rocket::fs::FileServer;
+use utils::cors::Cors;
 
 #[macro_use]
 extern crate rocket;
@@ -19,6 +20,7 @@ mod utils;
 #[rocket::launch]
 async fn launch() -> _ {
     rocket::build()
+        .attach(Cors)
         .manage(
             Database::connect_db()
                 .await
@@ -27,6 +29,9 @@ async fn launch() -> _ {
         .manage(std::sync::Mutex::new(HashMap::<String, i64>::new()))
         .mount("/images", FileServer::from("./SAVES"))
         .mount(UserController::base(), UserController::routes())
-        .mount(IllustratorController::base(), IllustratorController::routes())
+        .mount(
+            IllustratorController::base(),
+            IllustratorController::routes(),
+        )
         .mount(AdminController::base(), AdminController::routes())
 }
