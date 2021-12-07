@@ -16,12 +16,15 @@ pub struct AdminNew {
     pub name: RangeLimitString<1, 32>,
     pub password: RangeLimitString<6, 16>,
 }
-#[rocket::async_trait]
-impl super::TryIntoWithDatabase<admins::ActiveModel> for AdminNew {
+
+impl super::TryIntoWithConfig<admins::ActiveModel> for AdminNew {
     type Error = String;
-    async fn try_into(self, _db: &Database) -> Result<admins::ActiveModel, Self::Error> {
-        let super_pass = std::env::var("SUPER_ADMIN_PASSWORD").expect("NO Super Admin Exist");
-        if super_pass == self.super_identify {
+    fn try_into_with_config(
+        self,
+        config: &crate::utils::config::Config,
+    ) -> Result<admins::ActiveModel, Self::Error> {
+        let super_pass = &config.auth.super_admin_auth;
+        if super_pass == &self.super_identify {
             let res = admins::ActiveModel {
                 name: Set(self.name.into()),
                 password: Set(crypto_password(self.password.as_ref())),

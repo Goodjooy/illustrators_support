@@ -1,6 +1,8 @@
 /target
 
+
 Rocket.toml
+Config.toml
 .env
 build.rs
 

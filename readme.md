@@ -70,6 +70,7 @@
   - 本来应该有多页翻页啥的，但是没做
   - GET
   - Respond:
+
   ```json
   [
       {
@@ -79,11 +80,13 @@
       }
   ]
   ```
+
 - /illustrator/<id>
   - 获取指定画师的信息
   - 除了基本信息，还有代表作列表和获得的想要组队投票者（话说，这个投票者信息是不是就可以拿去登录了？）
   - GET
   - Respond:
+
   ```json
   {
       "iid":IllustratorID,
@@ -103,14 +106,14 @@
   }
   ```
 
-* /illustrator/<id\>
+- /illustrator/<id\>
 
   - 欸嘿，想要包养这个画师嘛，那就投票吧
   - 似乎不能取消投票欸，不过问题不大
   - POST
   - no body
 
-* /images/<path..>
+- /images/<path..>
   - 还记得刚刚的画师作品列表嘛
   - 把文件名放进 path，就可以看到作品了
   - GET
@@ -129,3 +132,32 @@
 |   .cur   |
 
 ## 交叉编译整不出来，摸了
+
+- GGG
+
+## 启动配置文件
+
+- `Rocket.toml`
+  Rocket 启动配置文件：[配置方法](https://rocket.rs/v0.5-rc/guide/configuration/#configuration)
+- `Config.toml`
+  附加的配置文件
+
+  ```toml
+    [database]
+    # 数据库 url 与sea-orm 配置里面的数据库类型保持一致
+    url="db://db_user:db_password@db_host:db_port/db_name"
+    # 数据库最大连接数
+    max_conn=64
+    # 数据库最小连接数
+    min_conn=4
+
+    [auth]
+    # 超级管理员密码 注册管理员时使用
+    super_admin_auth="11414519192-ff"
+    # 硬编码版本邀请码 注册普通用户时使用
+    invite_code="1234567"
+
+    [consts]
+    # 上传文件保存目录 
+    save_dir="./SAVES/"
+  ```

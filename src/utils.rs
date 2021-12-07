@@ -4,6 +4,7 @@ pub mod multpart;
 pub mod cors;
 pub mod measureable;
 pub mod range_limit;
+pub mod config;
 
 
 pub struct Assert<const COND: bool>;

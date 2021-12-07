@@ -1,9 +1,5 @@
-use crate::data_containers::TryIntoWithDatabase;
-use rocket::{
-    http::{CookieJar},
-    serde::json::Json,
-    State,
-};
+use crate::{data_containers::TryIntoWithConfig, utils::config::Config};
+use rocket::{http::CookieJar, serde::json::Json, State};
 use sea_orm::ActiveModelTrait;
 
 use crate::{
@@ -41,10 +37,14 @@ async fn user_login(
     RResult::ok(info)
 }
 #[post("/new", data = "<input>")]
-async fn user_new(input: Json<UserNew>, db: &State<Database>) -> RResult<String> {
+async fn user_new(
+    input: Json<UserNew>,
+    db: &State<Database>,
+    config: &State<Config>,
+) -> RResult<String> {
     let new_user = (*input).clone();
     let new_user: entity::users::ActiveModel =
-        to_rresult!(rs, TryIntoWithDatabase::try_into(new_user, &*db).await);
+        to_rresult!(rs, new_user.try_into_with_config(&*config));
 
     let _t = to_rresult!(rs, new_user.insert(db.unwarp()).await);
 

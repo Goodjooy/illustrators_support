@@ -1,5 +1,4 @@
-use crate::{data_containers::TryIntoWithDatabase, database::Database, utils::RangeLimitString};
-use std::env;
+use crate::utils::{config::Config, RangeLimitString};
 
 use rocket::http::Cookie;
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
@@ -7,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::entity;
 
-use super::SelectBy;
+use super::{SelectBy, TryIntoWithConfig};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserLogin {
@@ -58,14 +57,16 @@ pub struct UserNew {
     pub qq: i64,
     invite_code: RangeLimitString<8, 36>,
 }
-#[rocket::async_trait]
-impl TryIntoWithDatabase<entity::users::ActiveModel> for UserNew {
+impl TryIntoWithConfig<entity::users::ActiveModel> for UserNew {
     type Error = String;
 
-    async fn try_into(self, _db: &Database) -> Result<entity::users::ActiveModel, Self::Error> {
+    fn try_into_with_config(
+        self,
+        config: &Config,
+    ) -> Result<entity::users::ActiveModel, Self::Error> {
         dotenv::dotenv().ok();
-        let invite_code = env::var("INVITE_CODE").expect("No invite_code exist");
-        if &*self.invite_code == &invite_code {
+        let invite_code = &config.auth.invite_code;
+        if &*self.invite_code == invite_code {
             let res = entity::users::ActiveModel {
                 name: Set(self.name.into()),
                 qq: Set(self.qq),

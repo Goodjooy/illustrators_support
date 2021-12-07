@@ -1,8 +1,6 @@
-use crate::data_containers::{IntoCookie, SelectBy};
-use crate::{
-    data_containers::{admin::Admin, TryIntoWithDatabase},
-    database::Database,
-};
+use crate::data_containers::{IntoCookie, SelectBy, TryIntoWithConfig};
+use crate::utils::config::Config;
+use crate::{data_containers::admin::Admin, database::Database};
 
 use rocket::{http::CookieJar, serde::json::Json, State};
 use sea_orm::ActiveModelTrait;
@@ -21,10 +19,13 @@ crate::generate_controller!(AdminController, "/admin", new_admin, admin_login);
 crate::from_cooke!(__ADMIN_COOKIE_NAME__, Admin);
 
 #[post("/new", data = "<input>")]
-async fn new_admin(input: Json<AdminNew>, db: &State<Database>) -> RResult<&'static str> {
+async fn new_admin(
+    input: Json<AdminNew>,
+    db: &State<Database>,
+    config: &State<Config>,
+) -> RResult<&'static str> {
     let admin_info = (*input).clone();
-    let save_mod: admins::ActiveModel =
-        to_rresult!(rs, TryIntoWithDatabase::try_into(admin_info, &*db).await);
+    let save_mod: admins::ActiveModel = to_rresult!(rs, admin_info.try_into_with_config(&*config));
 
     let _res = to_rresult!(rs, save_mod.insert(db.unwarp()).await);
     RResult::ok("Create new admin success")

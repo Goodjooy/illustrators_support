@@ -1,7 +1,7 @@
 use rocket::http::Cookie;
 use serde::Serialize;
 
-use crate::database::Database;
+use crate::{database::Database, utils::config::Config};
 
 pub mod admin;
 pub mod illustrator;
@@ -31,6 +31,11 @@ impl<T: Serialize> IntoCookie for T {
             serde_json::to_string(&self).expect("Serialize Cookie Error"),
         )
     }
+}
+
+pub trait TryIntoWithConfig<T>{
+    type Error;
+    fn try_into_with_config(self,config:&Config)->Result<T,Self::Error>;
 }
 
 #[macro_export]
