@@ -1,10 +1,13 @@
 use serde::Deserialize;
 
+use super::RangeLimitString;
+
 #[derive(Deserialize, Default,Clone)]
 pub struct Config {
     pub database: DbConfig,
     pub auth: AuthConfig,
     pub consts: ConstConfig,
+    pub invite_codes:Option<DefaultInviteCodeConfig>
 }
 
 #[derive(Deserialize,Clone)]
@@ -27,14 +30,14 @@ impl Default for DbConfig {
 #[derive(Deserialize,Clone)]
 pub struct AuthConfig {
     pub super_admin_auth: String,
-    pub invite_code: String,
+   // pub invite_code: String,
 }
 
 impl Default for AuthConfig {
     fn default() -> Self {
         Self {
             super_admin_auth: "SUPER_ADMIN_PASSWORD".to_string(),
-            invite_code: "INIT_INVITE_CODE".to_string(),
+           // invite_code: "INIT_INVITE_CODE".to_string(),
         }
     }
 }
@@ -53,4 +56,8 @@ impl Default for ConstConfig {
             //admin_cookie: String::from("__AD__VIRFF__"),
         }
     }
+}
+#[derive(Deserialize,Clone)]
+pub struct DefaultInviteCodeConfig{
+    pub codes:Vec<RangeLimitString<8,36>>
 }

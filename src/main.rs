@@ -33,16 +33,21 @@ async fn launch() -> _ {
     let save_path = &config.consts.save_dir;
     std::fs::create_dir_all(save_path).expect("Failure create save dir, please create it manel");
 
+    let database = Database::connect_db(&config.database)
+        .await
+        .expect("Can not connect to database");
+    if let Some(cfig) = &config.invite_codes {
+        database
+            .add_default_code(cfig.clone())
+            .await
+            .expect("Add config invite code failure");
+    }
     // app start
     rocket::build()
         // attached midware
         .attach(Cors)
         // golbal manage vars
-        .manage(
-            Database::connect_db(&config.database)
-                .await
-                .expect("Can not connect to database"),
-        )
+        .manage(database)
         .manage(config.clone())
         .manage(std::sync::Mutex::new(HashMap::<String, i64>::new()))
         // rounts

@@ -17,7 +17,7 @@ pub trait SelectBy<T> {
 #[rocket::async_trait]
 pub trait TryIntoWithDatabase<T> {
     type Error;
-    async fn try_into(self, db: &Database) -> Result<T, Self::Error>;
+    async fn try_into_with_db(self, db: &Database) -> Result<T, Self::Error>;
 }
 
 pub trait IntoCookie {

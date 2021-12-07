@@ -27,13 +27,6 @@ impl<T: Measurable, const L: usize, const H: usize> RangeLimit<T, L, H> {
     pub fn into(self) -> T {
         self.data
     }
-
-    pub fn range(&self) -> (usize, usize) {
-        (L, H)
-    }
-    pub fn arange() -> (usize, usize) {
-        (L, H)
-    }
 }
 
 impl<T, const L: usize, const H: usize> Serialize for RangeLimit<T, L, H>
