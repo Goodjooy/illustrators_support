@@ -44,6 +44,7 @@
 
   - 向要包养的画师列表里面添加一个新的画师,要求有画师名称和画师包养的地址
   - 如果画师已经被添加了会添加失败
+  - 需要 User 权限（user 登录后的 cookie）
   - POST
 
   ```json
@@ -60,6 +61,7 @@
 
   - 通过 ident 为指定的画师添加作品（是不是还要有个清理 ident 的接口？）
   - ident 就是先前 new 时的响应体中的 uuid
+  - 需要 User 权限（user 登录后的 cookie）
   - 请求体是原始文件二进制（不是 form!!）
   - POST  
     body->file to upload  
@@ -69,6 +71,7 @@
 
   - 我全都要，获取全部画师简略信息
   - 本来应该有多页翻页啥的，但是没做
+  - 需要 User 权限（user 登录后的 cookie）
   - GET
   - Respond:
 
@@ -86,6 +89,7 @@
 
   - 获取指定画师的信息
   - 除了基本信息，还有代表作列表和获得的想要组队投票者（话说，这个投票者信息是不是就可以拿去登录了？）
+  - 需要 User 权限（user 登录后的 cookie）
   - GET
   - Respond:
 
@@ -107,6 +111,7 @@
 
   - 欸嘿，想要包养这个画师嘛，那就投票吧
   - 似乎不能取消投票欸，不过问题不大
+  - 需要 User 权限（user 登录后的 cookie）
   - POST
   - no body
 
@@ -141,17 +146,24 @@
 
   - 管理员添加邀请码
   - 每次最多添加 3 个，最少 1 个，每个最长 32，最短 8
+  - 需要 Admin 权限（admin 登录后的 cookie）
   - POST
 
   ```json
   {
-    "codes": ["InviteCode1[8,36]", "InviteCode2", "InviteCode3"] // range[1,3]
+    "codes": [
+      "InviteCode1[8,36]",
+      "InviteCode2", 
+      "InviteCode3"
+      ] 
+      // range[1,3]
   }
   ```
 
 - /images/<path..>
   - 还记得刚刚的画师作品列表嘛
   - 把文件名放进 path，就可以看到作品了
+  - 目前是没权限要求的，以后可能会加
   - GET
 
 ## 允许上传文件类型
@@ -212,3 +224,9 @@
 - 将`migrations`内的 `*.sql`文件在指定数据库中执行
 - 在执行文件所在目录添加配置文件 `Rocket.toml` 和 `Config.toml`，并完成配置
 - 当配置文件准备妥当后，直接运行可执行文件 `illustrators_support` 即可启动服务
+
+## 本地编译
+
+- `rust` stable
+- `cargo build --release`
+- `target/release/illustrators_support`
