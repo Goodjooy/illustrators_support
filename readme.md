@@ -21,10 +21,10 @@
 
   ```json
      {
-         "name":"YouName[4,32]",
-         "qq":1141451919 //YouQQNumber
-
-         "invite_code": "InviteCode"
+        "name":"YouName[4,32]",
+        "qq":1141451919, //YouQQNumber
+        "password": "YouPassword[6,16]",  
+        "invite_code": "InviteCode"
      }
   ```
 
@@ -167,10 +167,12 @@
     }
   ```
 
-- /images/<path..>
+- /images/\<path>
   - 还记得刚刚的画师作品列表嘛
   - 把文件名放进 path，就可以看到作品了
-  - 目前是没权限要求的，以后可能会加
+  - Admin 权限 已审核与未审核图片
+  - User 权限 已审核图片
+  - 无权限 什么都看不了
   - GET
 
 ## 允许上传文件类型

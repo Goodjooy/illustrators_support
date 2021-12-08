@@ -44,7 +44,7 @@ pub struct Illustrator {
     iid: i64,
     name: String,
     home: String,
-    arts: Vec<String>,
+    arts: Vec<(String, bool)>,
     wants: Vec<(String, i64)>,
 }
 
@@ -66,7 +66,10 @@ impl
             iid: ill.id,
             name: ill.name,
             home: ill.home,
-            arts: ill_arts.into_iter().map(|art| art.pic).collect(),
+            arts: ill_arts
+                .into_iter()
+                .map(|art| (art.pic, art.is_suit != 0))
+                .collect(),
             wants: wants.into_iter().map(|u| (u.name, u.qq)).collect(),
         }
     }
