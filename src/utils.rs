@@ -6,8 +6,7 @@ pub mod measureable;
 pub mod range_limit;
 pub mod config;
 pub mod crypto_string;
-
-
+pub mod lifetime_hashmap;
 pub struct Assert<const COND: bool>;
 
 trait IsTrue {}

@@ -8,7 +8,7 @@ pub struct Model {
     #[sea_orm(primary_key, unique)]
     pub id: i64,
     pub iid: i64,
-    pub is_suit: Option<i8>,
+    pub is_suit: i8,
     pub pic: String,
 }
 

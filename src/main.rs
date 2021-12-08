@@ -8,7 +8,7 @@ use figment::{
     Figment,
 };
 use rocket::fs::FileServer;
-use utils::{config::Config, cors::Cors};
+use utils::{config::Config, cors::Cors, lifetime_hashmap::LifeTimeHashMap};
 
 #[macro_use]
 extern crate rocket;
@@ -50,6 +50,7 @@ async fn launch() -> _ {
         .manage(database)
         .manage(config.clone())
         .manage(std::sync::Mutex::new(HashMap::<String, i64>::new()))
+        .manage(LifeTimeHashMap::<String,i64>::new())
         // rounts
         .mount("/images", FileServer::from(save_path))
         .mount(UserController::base(), UserController::routes())

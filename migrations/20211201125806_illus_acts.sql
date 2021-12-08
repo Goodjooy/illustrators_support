@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS illustrator_acts(
 
     `iid` BIGINT NOT NULL,
 
-    `is_suit` BOOL DEFAULT false,
+    `is_suit` BOOL NOT NULL DEFAULT false,
     `pic` VARCHAR(256) NOT NULL,
 
     FOREIGN KEY (iid) REFERENCES illustrators(id)

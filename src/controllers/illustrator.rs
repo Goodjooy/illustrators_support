@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::Path, sync::Mutex};
+use std::{path::Path, time::Duration};
 
 use crate::{
     data_containers::{
@@ -9,7 +9,7 @@ use crate::{
     database::Database,
     entity::{illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
-    utils::multpart::MultPartFile,
+    utils::{lifetime_hashmap::LifeTimeHashMap, multpart::MultPartFile},
 };
 
 use rocket::{serde::json::Json, State};
@@ -32,7 +32,7 @@ async fn new_illustrator(
     _auth: UserLogin,
     input: Json<IllustratorNew>,
     db: &State<Database>,
-    ill_collect: &State<Mutex<HashMap<String, i64>>>,
+    ill_collect: &State<LifeTimeHashMap<String, i64>>,
 ) -> RResult<String> {
     let ill_new = (*input).clone();
     let ill_new: illustrators::ActiveModel = ill_new.into();
@@ -45,8 +45,11 @@ async fn new_illustrator(
     );
 
     let ident = uuid::Uuid::new_v4();
-    let mut mut_ill = to_rresult!(rs, ill_collect.lock());
-    mut_ill.insert(ident.clone().to_string(), res.last_insert_id);
+    ill_collect.insert(
+        ident.clone().to_string(),
+        res.last_insert_id,
+        Duration::from_secs(3600),
+    );
 
     RResult::ok(ident.to_string())
 }
@@ -56,12 +59,9 @@ async fn add_art(
     ident: String,
     file: MultPartFile<'_>,
     db: &State<Database>,
-    ill_collect: &State<Mutex<HashMap<String, i64>>>,
+    ill_collect: &State<LifeTimeHashMap<String, i64>>,
 ) -> RResult<&'static str> {
-    let iid = {
-        let map = to_rresult!(rs, ill_collect.lock());
-        *to_rresult!(op, map.get(&ident), "Ident Not Found")
-    };
+    let iid = to_rresult!(op, ill_collect.get(&ident), "Ident Not Found");
 
     let iart = illustrator_acts::ActiveModel {
         iid: Set(iid),
