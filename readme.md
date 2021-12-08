@@ -100,9 +100,14 @@
     "name": "IllustratorName",
     "home": "IllustratorHome",
     "arts": [
-      "xxx-xx-xx-xx-xx.png",
-      "xxx-xx-xx-xx-xx.jpg",
-      "xxx-xx-xx-xx-xx.gif"
+      [
+        "xxx-xx-xx-xx-xx.png",
+        false //未审核或者审核未通过，user 看不了
+      ],
+      [
+        "xxx-xx-xx-xx-xx.jpg",
+        true // 已审核通过，user 看得到
+      ],
     ],
     "wants": [["WantsName", "WantsQQ"]]
   }
