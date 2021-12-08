@@ -1,4 +1,4 @@
-use crate::controllers::illustrator::IllustratorController;
+use crate::controllers::{file_server::FileServerController, illustrator::IllustratorController};
 use std::collections::HashMap;
 
 use controllers::{admin::AdminController, user::UserController, Controller};
@@ -7,7 +7,7 @@ use figment::{
     providers::{Format, Toml},
     Figment,
 };
-use rocket::fs::FileServer;
+
 use utils::{config::Config, cors::Cors, lifetime_hashmap::LifeTimeHashMap};
 
 #[macro_use]
@@ -50,9 +50,9 @@ async fn launch() -> _ {
         .manage(database)
         .manage(config.clone())
         .manage(std::sync::Mutex::new(HashMap::<String, i64>::new()))
-        .manage(LifeTimeHashMap::<String,i64>::new())
+        .manage(LifeTimeHashMap::<String, i64>::new())
         // rounts
-        .mount("/images", FileServer::from(save_path))
+        .mount(FileServerController::base(), FileServerController::routes())
         .mount(UserController::base(), UserController::routes())
         .mount(
             IllustratorController::base(),

@@ -91,11 +91,12 @@ impl<'v> FromFormField<'v> for MultPartFile<'v> {
 
 impl MultPartFile<'_> {
     pub async fn save_to<P: AsRef<Path>>(self, path: P) -> std::io::Result<Capped<File>> {
-        let res = self.data.into_file(path.as_ref().join(self.filename)).await;
+        let filename = self.filename();
+        let res = self.data.into_file(path.as_ref().join(filename)).await;
         res
     }
     pub fn filename(&self) -> String {
-        format!("{}.{}",self.filename,self.file_ext())
+        format!("{}.{}", self.filename, self.file_ext())
     }
     pub fn file_ext(&self) -> &str {
         &self.file_ext

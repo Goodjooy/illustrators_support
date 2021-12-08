@@ -23,7 +23,7 @@
      {
          "name":"YouName[4,32]",
          "qq":1141451919 //YouQQNumber
-         
+
          "invite_code": "InviteCode"
      }
   ```
@@ -56,7 +56,7 @@
   ```
 
   - Respond：
-    ident:后续添加画师画作的引导标记
+    ident:后续添加画师画作的引导标记,这个标记只有一个小时生命哦
 
 - /illustrator/add_arts/\<ident>
 

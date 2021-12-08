@@ -2,17 +2,19 @@ use super::{range_limit::LimitError, RangeLimitString};
 use crypto::{digest::Digest, sha3::Sha3};
 use serde::{Deserialize, Serialize};
 
+const FIX_SIZE:usize=64;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum CryptoString<const L: usize, const H: usize> {
     Raw(RangeLimitString<L, H>),
-    Cryptoed([u8; 32]),
+    Cryptoed(String),
 }
 
 impl<'s, const L: usize, const H: usize> Into<&'s str> for &'s CryptoString<L, H> {
     fn into(self) -> &'s str {
         match self {
             CryptoString::Raw(raw) => raw.as_ref().as_str(),
-            CryptoString::Cryptoed(s) => unsafe { std::str::from_utf8_unchecked(s) },
+            CryptoString::Cryptoed(s) => s.as_str(),
         }
     }
 }
@@ -21,9 +23,7 @@ impl<const L: usize, const H: usize> Into<String> for CryptoString<L, H> {
     fn into(self) -> String {
         match self {
             CryptoString::Raw(raw) => raw.into(),
-            CryptoString::Cryptoed(arr) => unsafe {
-                String::from_utf8_unchecked(arr.into_iter().collect())
-            },
+            CryptoString::Cryptoed(arr) => arr,
         }
     }
 }
@@ -38,12 +38,11 @@ impl<const L: usize, const H: usize> TryFrom<String> for CryptoString<L, H> {
     type Error = String;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(Self::Cryptoed(
-            value
-                .into_bytes()
-                .try_into()
-                .or_else(|_e| Err("Size Not Match".to_string()))?,
-        ))
+        if value.len() != FIX_SIZE {
+            Err("Size Not Match".to_string())
+        } else {
+            Ok(Self::Cryptoed(value))
+        }
     }
 }
 
@@ -52,17 +51,15 @@ impl<const L: usize, const H: usize> CryptoString<L, H> {
         let data = data.to_string();
         Ok(Self::Raw(RangeLimitString::try_from(data)?))
     }
-    fn crypto(raw: &str, result: &mut [u8]) {
+    fn crypto(raw: &str) -> String {
         let mut hasher = Sha3::keccak256();
         hasher.input_str(&raw);
-        hasher.result(result);
-        hasher.reset();
+        hasher.result_str()
     }
     pub fn into_crypto(self) -> Self {
         let res = match self {
             CryptoString::Raw(raw) => {
-                let mut res: [u8; 32] = Default::default();
-                Self::crypto(&raw, &mut res);
+                let res = Self::crypto(&raw);
                 res
             }
             c => return c,
@@ -79,15 +76,10 @@ impl<const L: usize, const H: usize> Serialize for CryptoString<L, H> {
     {
         match self {
             CryptoString::Raw(r) => {
-                let mut st: [u8; 32] = Default::default();
-                Self::crypto(&r, &mut st);
-                unsafe { String::from_utf8_unchecked(st.clone().into_iter().collect()) }
-                    .serialize(serializer)
+                let st = Self::crypto(&r);
+                st.serialize(serializer)
             }
-            CryptoString::Cryptoed(st) => {
-                unsafe { String::from_utf8_unchecked(st.clone().into_iter().collect()) }
-                    .serialize(serializer)
-            }
+            CryptoString::Cryptoed(st) => st.serialize(serializer),
         }
     }
 }
@@ -99,8 +91,7 @@ impl<'de, const L: usize, const H: usize> Deserialize<'de> for CryptoString<L, H
     {
         match String::deserialize(deserializer) {
             Ok(res) => {
-                if res.len() == 32 {
-                    let res: [u8; 32] = res.into_bytes().try_into().unwrap();
+                if res.len() == FIX_SIZE {
                     Ok(Self::Cryptoed(res))
                 } else {
                     Ok(Self::Raw(

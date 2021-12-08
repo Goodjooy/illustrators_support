@@ -53,7 +53,9 @@ impl Database {
                 res.push(r);
             }
         }
-        invites::Entity::insert_many(res).exec(&self.db).await?;
+        if res.len() != 0 {
+            invites::Entity::insert_many(res).exec(&self.db).await?;
+        }
 
         Ok(())
     }

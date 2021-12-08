@@ -52,9 +52,9 @@ macro_rules! from_cooke {
                 if let Some(cookie) = jar.get_private($cm) {
                     let value = cookie.value();
                     let au = RResult::from_result(serde_json::from_str::<$tg>(value));
-                    au.into_outcome(rocket::http::Status::Unauthorized)
+                    au.into_forword()
                 } else {
-                    rocket::outcome::Outcome::Failure((rocket::http::Status::Unauthorized, "No auth info".to_string()))
+                    rocket::outcome::Outcome::Forward(())
                 }
             }
         }

@@ -101,3 +101,22 @@ impl<K: Eq + Hash, V> LifeTimeHashMap<K, V> {
         map.insert(Arc::clone(&key), value)
     }
 }
+
+
+#[cfg(test)]
+mod test{
+    use super::*;
+    #[test]
+    fn test_death_data() {
+        let t=LifeTimeHashMap::new();
+        t.insert(1, 2, Duration::from_secs(2));
+        t.insert(12, 22, Duration::from_secs(2));
+        t.insert(13, 23, Duration::from_secs(2));
+
+        std::thread::sleep(Duration::from_secs(4));
+
+        assert_eq!(None,t.get(&1));
+        assert_eq!(None,t.get(&12));
+        assert_eq!(None,t.get(&13));
+    }
+}

@@ -42,6 +42,12 @@ impl<T: Serialize> RResult<T> {
             false => Outcome::Success(self.data.unwrap()),
         }
     }
+    pub fn into_forword(self)->Outcome<T,(Status,String),()>{
+        match self.err {
+            true => Outcome::Forward(()),
+            false => Outcome::Success(self.data.unwrap()),
+        }
+    }
 }
 
 impl <T:Serialize> From<Result<T,String>> for RResult<T> {
