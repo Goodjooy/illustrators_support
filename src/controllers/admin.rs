@@ -1,11 +1,10 @@
-use crate::data_containers::invite::InviteCodeNew;
-use crate::data_containers::{IntoCookie, SelectBy, TryIntoWithConfig, TryIntoWithDatabase};
-use crate::entity::invites;
+use crate::data_containers::{IntoCookie, SelectBy, TryIntoWithConfig};
+
 use crate::utils::config::Config;
 use crate::{data_containers::admin::Admin, database::Database};
 
 use rocket::{http::CookieJar, serde::json::Json, State};
-use sea_orm::{ActiveModelTrait, EntityTrait};
+use sea_orm::ActiveModelTrait;
 
 use crate::{
     data_containers::{admin::AdminNew, r_result::RResult},
@@ -13,6 +12,7 @@ use crate::{
     to_rresult,
 };
 
+mod opearte;
 mod views;
 
 const __ADMIN_COOKIE_NAME__: &str = "__AD__VIRFF__";
@@ -22,7 +22,8 @@ crate::generate_controller!(
     "/admin",
     new_admin,
     admin_login,
-    add_invite_code
+    opearte::add_invite_code,
+    opearte::make_art_suti
 );
 crate::from_cooke!(__ADMIN_COOKIE_NAME__, Admin);
 
@@ -55,23 +56,4 @@ async fn admin_login(
     cookes.add_private(cook);
 
     RResult::ok("Login success")
-}
-
-#[post("/invite", data = "<input>")]
-async fn add_invite_code(
-    _auth: Admin,
-    input: Json<InviteCodeNew>,
-    db: &State<Database>,
-) -> RResult<&'static str> {
-    let codes = (*input).clone();
-
-    let codes: Vec<invites::ActiveModel> =
-        to_rresult!(rs, TryIntoWithDatabase::try_into_with_db(codes, &*db).await);
-
-    let _res = to_rresult!(
-        rs,
-        invites::Entity::insert_many(codes).exec(db.unwarp()).await
-    );
-
-    Ok("Add invite code success").into()
 }

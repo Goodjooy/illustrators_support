@@ -36,12 +36,6 @@ impl<T: Serialize> RResult<T> {
     pub fn err<I: ToString>(msg: I) -> Self {
         Self::new(true, Some(msg.to_string()), None)
     }
-    pub fn into_outcome(self, info: Status) -> Outcome<T, (Status, String), ()> {
-        match self.err {
-            true => Outcome::Failure((info, self.emsg.unwrap())),
-            false => Outcome::Success(self.data.unwrap()),
-        }
-    }
     pub fn into_forword(self)->Outcome<T,(Status,String),()>{
         match self.err {
             true => Outcome::Forward(()),

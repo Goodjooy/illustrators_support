@@ -13,7 +13,7 @@ pub trait Controller {
 }
 #[macro_export]
 macro_rules! generate_controller {
-    ($name:ident,$base:literal,$($routes:ident),*) => {
+    ($name:ident,$base:literal,$($routes:path),*) => {
         pub struct $name;
         impl crate::controllers::Controller for $name  {
             fn routes()->Vec<rocket::Route>{

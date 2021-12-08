@@ -143,23 +143,19 @@
   }
   ```
 
+- /admin/audit/\<art_name>
+
+  - 管理员审核作品（将作品标记为适合的)
+  - art_name 为指定作品名称
+  - 需要 Admin 权限（admin 登录后的 cookie）
+  - POST
+
 - /admin/invite
 
   - 管理员添加邀请码
   - 每次最多添加 3 个，最少 1 个，每个最长 32，最短 8
   - 需要 Admin 权限（admin 登录后的 cookie）
   - POST
-
-  ```json
-  {
-    "codes": [
-      "InviteCode1[8,36]",
-      "InviteCode2", 
-      "InviteCode3"
-      ] 
-      // range[1,3]
-  }
-  ```
 
 - /images/<path..>
   - 还记得刚刚的画师作品列表嘛
