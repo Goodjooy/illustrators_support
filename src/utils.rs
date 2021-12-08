@@ -5,6 +5,7 @@ pub mod cors;
 pub mod measureable;
 pub mod range_limit;
 pub mod config;
+pub mod crypto_string;
 
 
 pub struct Assert<const COND: bool>;

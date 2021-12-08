@@ -1,20 +1,16 @@
-use crypto::digest::Digest;
-
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 
-use crate::{database::Database, entity::admins, utils::RangeLimitString};
-
-fn crypto_password(paswd: &str) -> String {
-    let mut hasher = crypto::sha3::Sha3::keccak256();
-    hasher.input_str(paswd);
-    hasher.result_str()
-}
+use crate::{
+    database::Database,
+    entity::admins,
+    utils::{crypto_string::CryptoString, RangeLimitString},
+};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct AdminNew {
     pub super_identify: String,
     pub name: RangeLimitString<1, 32>,
-    pub password: RangeLimitString<6, 16>,
+    pub password: CryptoString<6, 16>,
 }
 
 impl super::TryIntoWithConfig<admins::ActiveModel> for AdminNew {
@@ -27,7 +23,7 @@ impl super::TryIntoWithConfig<admins::ActiveModel> for AdminNew {
         if super_pass == &self.super_identify {
             let res = admins::ActiveModel {
                 name: Set(self.name.into()),
-                password: Set(crypto_password(self.password.as_ref())),
+                password: Set(self.password.into_crypto().into()),
                 ..Default::default()
             };
             Ok(res)
@@ -40,14 +36,14 @@ impl super::TryIntoWithConfig<admins::ActiveModel> for AdminNew {
 pub struct Admin {
     pub aid: Option<i64>,
     pub name: RangeLimitString<1, 32>,
-    pub password: RangeLimitString<6, 64>,
+    pub password: CryptoString<6, 16>,
 }
 #[rocket::async_trait]
 impl super::SelectBy<admins::Model> for Admin {
     async fn select_by(self, db: &Database) -> Result<Option<admins::Model>, sea_orm::DbErr> {
         let condition = Condition::all()
             .add(admins::Column::Name.eq(self.name.as_ref().as_str()))
-            .add(admins::Column::Password.eq(crypto_password(self.password.as_ref())));
+            .add(admins::Column::Password.eq::<String>(self.password.into_crypto().into()));
 
         admins::Entity::find()
             .filter(condition)
@@ -61,7 +57,7 @@ impl From<admins::Model> for Admin {
         Self {
             aid: Some(m.id),
             name: RangeLimitString::try_from(m.name).unwrap(),
-            password: RangeLimitString::try_from(m.password).unwrap(),
+            password: CryptoString::try_from(m.password).unwrap(),
         }
     }
 }
