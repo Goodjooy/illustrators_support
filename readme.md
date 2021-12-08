@@ -157,6 +157,16 @@
   - 需要 Admin 权限（admin 登录后的 cookie）
   - POST
 
+  ```json
+    {
+    "codes": [
+      "InviteCode1[8,36]",
+      "InviteCode2", 
+      "InviteCode3"
+      ]
+    }
+  ```
+
 - /images/<path..>
   - 还记得刚刚的画师作品列表嘛
   - 把文件名放进 path，就可以看到作品了
