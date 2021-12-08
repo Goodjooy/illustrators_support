@@ -23,20 +23,21 @@
      {
          "name":"YouName[4,32]",
          "qq":1141451919 //YouQQNumber
+         
          "invite_code": "InviteCode"
      }
   ```
 
 - /user/login
 
-  - 提供姓名和 qq，即可登录（没有密码验证，不要被别人知道你在这）
-  - 没有登出，登录上别的号就登出了
+  - 提供密码和 qq，即可登录
+  - 没有登出，登录上别的号就登出了，服务器不保存登录session
   - POST
 
   ```json
   {
-    "name": "YouName[4,32]",
-    "qq": 1141451919 //YouQQNumber
+    "qq": 1141451919, //YouQQNumber
+    "password": "YouPassword[6,16]",
   }
   ```
 

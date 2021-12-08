@@ -1,6 +1,9 @@
-use crate::{entity::users, utils::RangeLimitString};
+use crate::{
+    entity::users,
+    utils::{crypto_string::CryptoString, RangeLimitString},
+};
 
-use rocket::http::Cookie;
+
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
 
@@ -11,8 +14,9 @@ use super::{SelectBy, TryIntoWithDatabase};
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserLogin {
     pub id: Option<i64>,
-    pub name: RangeLimitString<4, 32>,
+    pub name: Option<RangeLimitString<4, 32>>,
     pub qq: i64,
+    pub password: CryptoString<6, 16>,
 }
 #[rocket::async_trait]
 impl SelectBy<entity::users::Model> for UserLogin {
@@ -20,18 +24,18 @@ impl SelectBy<entity::users::Model> for UserLogin {
         self,
         db: &crate::database::Database,
     ) -> Result<Option<entity::users::Model>, sea_orm::DbErr> {
-        if let Some(id) = self.id {
-            entity::users::Entity::find_by_id(id).one(db.unwarp()).await
-        } else {
+        
             entity::users::Entity::find()
                 .filter(
                     Condition::all()
-                        .add(entity::users::Column::Name.eq(self.name.as_ref().as_str()))
-                        .add(entity::users::Column::Qq.eq(self.qq)),
+                        .add(entity::users::Column::Qq.eq(self.qq))
+                        .add(
+                            entity::users::Column::Password
+                                .eq::<String>(self.password.into_crypto().into()),
+                        ),
                 )
                 .one(db.unwarp())
                 .await
-        }
     }
 }
 
@@ -39,15 +43,10 @@ impl From<entity::users::Model> for UserLogin {
     fn from(src: entity::users::Model) -> Self {
         Self {
             id: Some(src.id),
-            name: RangeLimitString::try_from(src.name).unwrap(),
+            name: RangeLimitString::try_from(src.name).ok(),
             qq: src.qq,
+            password: CryptoString::try_from(src.password).unwrap(),
         }
-    }
-}
-
-impl UserLogin {
-    pub fn to_cookie(self, cookie_name: &str) -> Cookie {
-        Cookie::new(cookie_name, serde_json::to_string(&self).unwrap())
     }
 }
 
@@ -55,6 +54,7 @@ impl UserLogin {
 pub struct UserNew {
     pub name: RangeLimitString<4, 32>,
     pub qq: i64,
+    pub password: CryptoString<6, 16>,
     invite_code: RangeLimitString<8, 36>,
 }
 
@@ -72,6 +72,7 @@ impl TryIntoWithDatabase<users::ActiveModel> for UserNew {
             let res = entity::users::ActiveModel {
                 name: Set(self.name.into()),
                 qq: Set(self.qq),
+                password: Set(self.password.into_crypto().into()),
                 ..Default::default()
             };
             Ok(res)

@@ -1,4 +1,4 @@
-use crate::data_containers::TryIntoWithDatabase;
+use crate::data_containers::{IntoCookie, TryIntoWithDatabase};
 use rocket::{http::CookieJar, serde::json::Json, State};
 use sea_orm::ActiveModelTrait;
 
@@ -31,8 +31,14 @@ async fn user_login(
         "User Name Or QQ Not Exist"
     );
     let uauth: UserLogin = res.into();
-    let info = format!("[ {} ] Login Success", uauth.name);
-    cookies.add_private(uauth.to_cookie(COOKIE_NAME));
+    let info = format!(
+        "[ {} ] Login Success",
+        match &(uauth.name) {
+            Some(s) => s.as_ref().as_str(),
+            None => "UNknowm",
+        }
+    );
+    cookies.add_private(uauth.into_cookie(COOKIE_NAME));
 
     RResult::ok(info)
 }
