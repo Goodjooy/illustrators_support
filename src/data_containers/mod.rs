@@ -5,9 +5,9 @@ use crate::{database::Database, utils::config::Config};
 
 pub mod admin;
 pub mod illustrator;
+pub mod invite;
 pub mod r_result;
 pub mod users;
-pub mod invite;
 
 #[rocket::async_trait]
 pub trait SelectBy<T> {
@@ -26,16 +26,19 @@ pub trait IntoCookie {
 
 impl<T: Serialize> IntoCookie for T {
     fn into_cookie(self, name: &str) -> Cookie {
-        Cookie::new(
+        Cookie::build(
             name.to_string(),
             serde_json::to_string(&self).expect("Serialize Cookie Error"),
         )
+        .same_site(rocket::http::SameSite::None)
+        .http_only(false)
+        .finish()
     }
 }
 
-pub trait TryIntoWithConfig<T>{
+pub trait TryIntoWithConfig<T> {
     type Error;
-    fn try_into_with_config(self,config:&Config)->Result<T,Self::Error>;
+    fn try_into_with_config(self, config: &Config) -> Result<T, Self::Error>;
 }
 
 #[macro_export]

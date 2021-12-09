@@ -52,7 +52,7 @@ async fn user_login(
         }
     );
     cookies.add_private(uauth.into_cookie(COOKIE_NAME));
-
+    
     RResult::ok(info)
 }
 
