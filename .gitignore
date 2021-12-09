@@ -9,3 +9,6 @@ build.rs
 .vscode
 
 SAVES/
+
+*.tar
+sqls/
