@@ -1657,7 +1657,6 @@ dependencies = [
  "chrono",
  "futures",
  "futures-util",
- "log",
  "ouroboros",
  "rust_decimal",
  "sea-orm-macros",

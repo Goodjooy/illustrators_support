@@ -1,5 +1,9 @@
 use crate::data_containers::{IntoCookie, TryIntoWithDatabase};
-use rocket::{http::CookieJar, serde::json::Json, State};
+use rocket::{
+    http::{CookieJar, Status},
+    serde::json::Json,
+    State,
+};
 use sea_orm::ActiveModelTrait;
 
 use crate::{
@@ -14,17 +18,26 @@ use crate::{
 
 const COOKIE_NAME: &str = "__uauth__";
 
-generate_controller!(UserController, "/user", user_login, user_new);
+generate_controller!(
+    UserController,
+    "/user",
+    user_login,
+    user_new //backend handler
+);
 
 crate::from_cooke!(COOKIE_NAME, UserLogin);
 
 #[post("/login", data = "<login_info>")]
 async fn user_login(
-    login_info: Json<UserLogin>,
+    login_info: Json<serde_json::Value>,
     db: &State<Database>,
     cookies: &CookieJar<'_>,
 ) -> RResult<String> {
-    let ulogin = (*login_info).clone();
+    let ulogin = to_rresult!(
+        rs,
+        super::into_entity::<UserLogin>(login_info),
+        Status::UnprocessableEntity
+    );
     let res = to_rresult!(
         op,
         to_rresult!(rs, ulogin.select_by(&*db).await),
@@ -42,9 +55,14 @@ async fn user_login(
 
     RResult::ok(info)
 }
+
 #[post("/new", data = "<input>")]
-async fn user_new(input: Json<UserNew>, db: &State<Database>) -> RResult<String> {
-    let new_user = (*input).clone();
+async fn user_new(input: Json<serde_json::Value>, db: &State<Database>) -> RResult<String> {
+    let new_user = to_rresult!(
+        rs,
+        super::into_entity::<UserNew>(input),
+        Status::UnprocessableEntity
+    );
     let new_user: entity::users::ActiveModel =
         to_rresult!(rs, new_user.try_into_with_db(&*db).await);
 

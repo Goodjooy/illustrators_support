@@ -1,16 +1,16 @@
 use std::path::Path;
 
-use rocket::{fs::NamedFile, State};
+use rocket::{fs::NamedFile, http::Status, State};
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 
 use crate::{
-    data_containers::{admin::Admin, users::UserLogin},
+    data_containers::{admin::Admin, r_result::RResult, users::UserLogin},
     database::Database,
     entity::illustrator_acts,
     utils::config::Config,
 };
 
-crate::generate_controller!(FileServerController, "/images", user_file, admin_file);
+crate::generate_controller!(FileServerController, "/images", user_file, admin_file,passage);
 
 async fn load_file(
     file_name: String,
@@ -57,11 +57,22 @@ async fn admin_file(
 ) -> Option<NamedFile> {
     load_file(file_name, db, config, true).await
 }
-
+#[get("/<file_name>", rank = 3)]
+fn passage(file_name: String) -> RResult<String> {
+    RResult::status_err(
+        Status::NotFound,
+        format!(
+            "`User` or `Admin` auth Need for view image `{}` Or Waiting for audit",
+            file_name
+        ),
+    )
+}
 
 #[test]
-fn test_is_file(){
-    let path=Path::new("M:/rust_project/illustrators_support/SAVES/6e10a45f-88ff-498c-b0a4-a76d8946d10a.jpeg");
+fn test_is_file() {
+    let path = Path::new(
+        "M:/rust_project/illustrators_support/SAVES/6e10a45f-88ff-498c-b0a4-a76d8946d10a.jpeg",
+    );
 
-    assert_eq!(path.is_file(),true);
+    assert_eq!(path.is_file(), true);
 }

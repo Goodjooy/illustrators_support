@@ -26,7 +26,7 @@ features=[
     "sqlx-mysql",
     "runtime-tokio-rustls",
     "macros",
-    "debug-print"
+   # "debug-print"
 ]
 
 #web server crate

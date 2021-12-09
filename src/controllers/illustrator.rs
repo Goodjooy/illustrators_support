@@ -9,13 +9,11 @@ use crate::{
     database::Database,
     entity::{illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
-    utils::{lifetime_hashmap::LifeTimeHashMap, multpart::MultPartFile},
+    utils::{config::Config, lifetime_hashmap::LifeTimeHashMap, multpart::MultPartFile},
 };
 
-use rocket::{serde::json::Json, State};
+use rocket::{http::Status, serde::json::Json, State};
 use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
-
-const SAVE_PATH: &str = "./SAVES";
 
 crate::generate_controller!(
     IllustratorController,
@@ -24,17 +22,27 @@ crate::generate_controller!(
     add_art,
     illustrator_all,
     illustrator_detial,
-    want_illustrator
+    want_illustrator,
+    // backen handler
+    no_user_auth_post,
+    no_user_auth_get
 );
+
+crate::no_auth_handle!(post, no_user_auth_post, User, "illustrator");
+crate::no_auth_handle!(get, no_user_auth_get, User, "illustrator");
 
 #[post("/new", data = "<input>")]
 async fn new_illustrator(
     _auth: UserLogin,
-    input: Json<IllustratorNew>,
+    input: Json<serde_json::Value>,
     db: &State<Database>,
     ill_collect: &State<LifeTimeHashMap<String, i64>>,
 ) -> RResult<String> {
-    let ill_new = (*input).clone();
+    let ill_new = to_rresult!(
+        rs,
+        super::into_entity::<IllustratorNew>(input),
+        Status::UnprocessableEntity
+    );
     let ill_new: illustrators::ActiveModel = ill_new.into();
 
     let res = to_rresult!(
@@ -59,6 +67,7 @@ async fn add_art(
     ident: String,
     file: MultPartFile<'_>,
     db: &State<Database>,
+    config: &State<Config>,
     ill_collect: &State<LifeTimeHashMap<String, i64>>,
 ) -> RResult<&'static str> {
     let iid = to_rresult!(op, ill_collect.get(&ident), "Ident Not Found");
@@ -71,7 +80,7 @@ async fn add_art(
 
     let _res = to_rresult!(rs, iart.insert(db.unwarp()).await);
 
-    let _res = to_rresult!(rs, file.save_to(Path::new(SAVE_PATH)).await);
+    let _res = to_rresult!(rs, file.save_to(Path::new(&config.consts.save_dir)).await);
 
     RResult::ok("Upload File success")
 }

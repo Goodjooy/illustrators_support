@@ -3,6 +3,7 @@ use crate::data_containers::{IntoCookie, SelectBy, TryIntoWithConfig};
 use crate::utils::config::Config;
 use crate::{data_containers::admin::Admin, database::Database};
 
+use rocket::http::Status;
 use rocket::{http::CookieJar, serde::json::Json, State};
 use sea_orm::ActiveModelTrait;
 
@@ -15,7 +16,7 @@ use crate::{
 mod opearte;
 mod views;
 
-const __ADMIN_COOKIE_NAME__: &str = "__AD__VIRFF__";
+const ADMIN_COOKIE_NAME: &str = "__AD__VIRFF__";
 
 crate::generate_controller!(
     AdminController,
@@ -23,36 +24,51 @@ crate::generate_controller!(
     new_admin,
     admin_login,
     opearte::add_invite_code,
-    opearte::make_art_suti
+    opearte::make_art_suti,
+    // back handler
+    no_user_auth_post,
+    no_user_auth_get
 );
-crate::from_cooke!(__ADMIN_COOKIE_NAME__, Admin);
+crate::from_cooke!(ADMIN_COOKIE_NAME, Admin);
+
+crate::no_auth_handle!(post, no_user_auth_post, Admin, "admin");
+crate::no_auth_handle!(get, no_user_auth_get, Admin, "admin");
 
 #[post("/new", data = "<input>")]
 async fn new_admin(
-    input: Json<AdminNew>,
+    input: Json<serde_json::Value>,
     db: &State<Database>,
     config: &State<Config>,
 ) -> RResult<&'static str> {
-    let admin_info = (*input).clone();
+    let admin_info = to_rresult!(
+        rs,
+        super::into_entity::<AdminNew>(input),
+        Status::UnprocessableEntity
+    );
     let save_mod: admins::ActiveModel = to_rresult!(rs, admin_info.try_into_with_config(&*config));
 
     let _res = to_rresult!(rs, save_mod.insert(db.unwarp()).await);
     RResult::ok("Create new admin success")
 }
+
 #[post("/login", data = "<input>")]
 async fn admin_login(
-    input: Json<Admin>,
+    input: Json<serde_json::Value>,
     db: &State<Database>,
     cookes: &CookieJar<'_>,
 ) -> RResult<&'static str> {
-    let admin = (*input).clone();
+    let admin =  to_rresult!(
+        rs,
+        super::into_entity::<Admin>(input),
+        Status::UnprocessableEntity
+    );
     let model = to_rresult!(
         op,
         to_rresult!(rs, admin.select_by(&*db).await),
         "Admin Info Not Found"
     );
     let admin: Admin = model.into();
-    let cook = admin.into_cookie(__ADMIN_COOKIE_NAME__);
+    let cook = admin.into_cookie(ADMIN_COOKIE_NAME);
     cookes.add_private(cook);
 
     RResult::ok("Login success")

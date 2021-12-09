@@ -6,16 +6,20 @@ use crate::{
     entity::{illustrator_acts, invites},
     to_rresult,
 };
-use rocket::{serde::json::Json, State};
+use rocket::{http::Status, serde::json::Json, State};
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 
 #[post("/invite", data = "<input>")]
 pub async fn add_invite_code(
     _auth: Admin,
-    input: Json<InviteCodeNew>,
+    input: Json<serde_json::Value>,
     db: &State<Database>,
 ) -> RResult<&'static str> {
-    let codes = (*input).clone();
+    let codes = to_rresult!(
+        rs,
+        super::super::into_entity::<InviteCodeNew>(input),
+        Status::UnprocessableEntity
+    );
 
     let codes: Vec<invites::ActiveModel> =
         to_rresult!(rs, TryIntoWithDatabase::try_into_with_db(codes, &*db).await);
@@ -25,7 +29,7 @@ pub async fn add_invite_code(
         invites::Entity::insert_many(codes).exec(db.unwarp()).await
     );
 
-    Ok("Add invite code success").into()
+    RResult::ok("Add invite code success")
 }
 
 #[post("/audit/<art_name>")]
