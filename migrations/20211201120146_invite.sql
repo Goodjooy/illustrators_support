@@ -1,6 +1,0 @@
--- Add migration script here
-CREATE TABLE IF NOT EXISTS users (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT UNIQUE,
-
-    `code` CHAR(36) NOT NULL UNIQUE
-)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

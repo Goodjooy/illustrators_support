@@ -8,7 +8,7 @@ use figment::{
     Figment,
 };
 
-use utils::{config::Config, cors::Cors, lifetime_hashmap::LifeTimeHashMap};
+use utils::{config::Config, cors::Cors, cors_handle, lifetime_hashmap::LifeTimeHashMap};
 
 #[macro_use]
 extern crate rocket;
@@ -52,6 +52,7 @@ async fn launch() -> _ {
         .manage(std::sync::Mutex::new(HashMap::<String, i64>::new()))
         .manage(LifeTimeHashMap::<String, i64>::new())
         // rounts
+        .mount("/", rocket::routes![cors_handle])
         .mount(FileServerController::base(), FileServerController::routes())
         .mount(UserController::base(), UserController::routes())
         .mount(
