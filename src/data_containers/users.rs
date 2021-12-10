@@ -16,6 +16,7 @@ pub struct UserLogin {
     pub id: Option<i64>,
     pub name: Option<RangeLimitString<4, 32>>,
     pub qq: i64,
+    #[serde(alias = "pwd")]
     pub password: CryptoString<6, 16>,
 }
 #[rocket::async_trait]
@@ -54,7 +55,9 @@ impl From<entity::users::Model> for UserLogin {
 pub struct UserNew {
     pub name: RangeLimitString<4, 32>,
     pub qq: i64,
+    #[serde(alias = "pwd")]
     pub password: CryptoString<6, 16>,
+    #[serde(alias = "code")]
     invite_code: RangeLimitString<8, 36>,
 }
 

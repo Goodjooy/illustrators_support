@@ -8,8 +8,11 @@ use crate::{
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct AdminNew {
+    #[serde(alias = "sid")]
+    #[serde(alias = "spwd")]
     pub super_identify: String,
     pub name: RangeLimitString<1, 32>,
+    #[serde(alias = "pwd")]
     pub password: CryptoString<6, 16>,
 }
 
@@ -36,6 +39,7 @@ impl super::TryIntoWithConfig<admins::ActiveModel> for AdminNew {
 pub struct Admin {
     pub aid: Option<i64>,
     pub name: RangeLimitString<1, 32>,
+    #[serde(alias = "pwd")]
     pub password: CryptoString<6, 16>,
 }
 #[rocket::async_trait]

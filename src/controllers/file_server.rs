@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use rocket::{fs::NamedFile, http::Status, State};
 use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
@@ -76,13 +76,13 @@ fn passage(file_name: String) -> RResult<String> {
     )
 }
 
-#[post("/upload",data="<file>")]
+#[post("/upload", data = "<file>")]
 async fn upload(
     auth: UserLogin,
     file: MultPartFile<'_>,
     db: &State<Database>,
     config: &State<Config>,
-) -> RResult<PathBuf> {
+) -> RResult<String> {
     let uid = to_rresult!(
         op,
         auth.id,
@@ -91,11 +91,11 @@ async fn upload(
     );
 
     let file_save_path = Path::new(&config.consts.save_dir);
-    let file_url_name = Path::new("/images").join(file.filename());
+    let file_url_name = file.filename();
 
     let fs = file_stores::ActiveModel {
         uid: Set(uid),
-        is_suit: Set(false as i8),
+        is_suit: Set(true as i8),
         file: Set(file.filename()),
         ..Default::default()
     };

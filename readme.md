@@ -69,7 +69,7 @@
   - POST
 
   ```form
-  src=art_source&file=file_content
+  src=art_source&file=file_url
   ```
 
 - /illustrator/all
@@ -182,6 +182,12 @@
   - User 权限 已审核图片
   - 无权限 什么都看不了
   - GET
+  
+- /images/upload
+  - 文件上传接口  
+  - User 权限 需要
+  - POST
+  - 请求体就是文件本体
 
 ## 允许上传文件类型
 

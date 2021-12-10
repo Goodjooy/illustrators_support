@@ -1,8 +1,9 @@
 use sea_orm::Set;
+use serde::Deserialize;
 
 use crate::{entity::illustrator_acts, utils::MaxLimitString};
 
-#[derive(FromForm)]
+#[derive(FromForm,Deserialize)]
 pub struct ArtNew {
     #[field(name = uncased("source"))]
     #[field(name = uncased("pixiv-src"))]
