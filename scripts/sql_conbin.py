@@ -1,5 +1,3 @@
-import tarfile
-import shutil
 import os
 
 print("conbin sql START")
