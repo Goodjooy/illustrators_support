@@ -30,9 +30,9 @@ impl<T: Serialize> IntoCookie for T {
             name.to_string(),
             serde_json::to_string(&self).expect("Serialize Cookie Error"),
         )
-        .same_site(rocket::http::SameSite::Lax)
+        .same_site(rocket::http::SameSite::None)
         .http_only(false)
-        .secure(false)
+        .secure(true)
         .finish()
     }
 }

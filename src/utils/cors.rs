@@ -40,5 +40,6 @@ impl Fairing for Cors {
         for h in header.get(hyper::header::ACCESS_CONTROL_REQUEST_HEADERS.as_str()) {
             res.adjoin_header(Header::new(ACCESS_CONTROL_ALLOW_HEADERS.as_str(), h));
         }
+
     }
 }
