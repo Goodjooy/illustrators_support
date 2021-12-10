@@ -122,7 +122,7 @@ async fn illustrator_detial(
         to_rresult!(
             rs,
             illustrators::Entity::find_by_id(id)
-                .join(
+                .join_rev(
                     sea_orm::JoinType::InnerJoin,
                     illustrator_acts::Relation::Illustrators.def(),
                 )
@@ -130,7 +130,7 @@ async fn illustrator_detial(
                     sea_orm::JoinType::InnerJoin,
                     illustrator_acts::Relation::FileStores.def(),
                 )
-                .group_by(illustrators::Column::Id)
+             //   .group_by(illustrators::Column::Id)
                 .select_with(file_stores::Entity)
                 .all(db.unwarp())
                 .await

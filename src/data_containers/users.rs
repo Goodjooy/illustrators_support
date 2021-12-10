@@ -3,13 +3,12 @@ use crate::{
     utils::{crypto_string::CryptoString, RangeLimitString},
 };
 
-
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
 
 use crate::entity;
 
-use super::{SelectBy, TryIntoWithDatabase};
+use super::{CheckExits, SelectBy, TryIntoWithDatabase};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserLogin {
@@ -25,18 +24,31 @@ impl SelectBy<entity::users::Model> for UserLogin {
         self,
         db: &crate::database::Database,
     ) -> Result<Option<entity::users::Model>, sea_orm::DbErr> {
-        
-            entity::users::Entity::find()
-                .filter(
-                    Condition::all()
-                        .add(entity::users::Column::Qq.eq(self.qq))
-                        .add(
-                            entity::users::Column::Password
-                                .eq::<String>(self.password.into_crypto().into()),
-                        ),
-                )
-                .one(db.unwarp())
-                .await
+        entity::users::Entity::find()
+            .filter(
+                Condition::all()
+                    .add(entity::users::Column::Qq.eq(self.qq))
+                    .add(
+                        entity::users::Column::Password
+                            .eq::<String>(self.password.into_crypto().into()),
+                    ),
+            )
+            .one(db.unwarp())
+            .await
+    }
+}
+#[async_trait]
+impl CheckExits for UserLogin {
+   async fn exist(&self, db: &crate::database::Database) -> Result<bool, sea_orm::DbErr> {
+        users::Entity::find()
+            .filter(
+                Condition::all()
+                    .add(users::Column::Qq.eq(self.qq))
+                    .add(users::Column::Password.eq(self.password.as_ref())),
+            )
+            .one(db.unwarp())
+            .await
+            .and_then(|o| Ok(o.is_some()))
     }
 }
 

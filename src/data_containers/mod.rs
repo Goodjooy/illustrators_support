@@ -16,7 +16,7 @@ pub trait SelectBy<T> {
 }
 #[rocket::async_trait]
 pub trait CheckExits {
-    async fn exist(&self,db:&Database)->bool{false}
+    async fn exist(&self,db:&Database)->Result<bool,sea_orm::DbErr>;
 }
 
 #[rocket::async_trait]
