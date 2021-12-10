@@ -15,8 +15,6 @@ crate::generate_controller!(
     FileServerController,
     "/images",
     user_file,
-    admin_file,
-    passage,
     upload
 );
 
@@ -49,31 +47,11 @@ async fn load_file(
 }
 #[get("/<file_name>", rank = 2)]
 async fn user_file(
-    _auth: UserLogin,
-    file_name: String,
-    db: &State<Database>,
-    config: &State<Config>,
-) -> Option<NamedFile> {
-    load_file(file_name, db, config, false).await
-}
-#[get("/<file_name>", rank = 1)]
-async fn admin_file(
-    _auth: Admin,
     file_name: String,
     db: &State<Database>,
     config: &State<Config>,
 ) -> Option<NamedFile> {
     load_file(file_name, db, config, true).await
-}
-#[get("/<file_name>", rank = 3)]
-fn passage(file_name: String) -> RResult<String> {
-    RResult::status_err(
-        Status::NotFound,
-        format!(
-            "`User` or `Admin` auth Need for view image `{}` Or Waiting for audit",
-            file_name
-        ),
-    )
 }
 
 #[post("/upload", data = "<file>")]
