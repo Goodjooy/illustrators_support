@@ -11,6 +11,7 @@ pub mod lifetime_hashmap;
 pub mod measureable;
 pub mod multpart;
 pub mod range_limit;
+pub mod auth_switch;
 
 pub struct Assert<const COND: bool>;
 

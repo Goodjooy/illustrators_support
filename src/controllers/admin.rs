@@ -16,7 +16,7 @@ use crate::{
 mod opearte;
 mod views;
 
-const ADMIN_COOKIE_NAME: &str = "__AD__VIRFF__";
+const ADMIN_COOKIE_NAME: &str = "Admin-Auth";
 
 crate::generate_controller!(
     AdminController,

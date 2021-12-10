@@ -57,6 +57,10 @@ macro_rules! from_cooke {
                     let value = cookie.value();
                     let au = RResult::from_result(serde_json::from_str::<$tg>(value));
                     au.into_forword()
+                } else if let Some(cookie) = jar.get_private_pending($cm) {
+                    let value = cookie.value();
+                    let au = RResult::from_result(serde_json::from_str::<$tg>(value));
+                    au.into_forword()
                 } else {
                     rocket::outcome::Outcome::Forward(())
                 }

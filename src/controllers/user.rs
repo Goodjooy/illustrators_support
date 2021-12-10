@@ -16,7 +16,7 @@ use crate::{
     entity, generate_controller, to_rresult,
 };
 
-const COOKIE_NAME: &str = "__uauth__";
+const COOKIE_NAME: &str = "User-Auth";
 
 generate_controller!(
     UserController,

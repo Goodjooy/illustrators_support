@@ -8,7 +8,7 @@ use figment::{
     Figment,
 };
 
-use utils::{config::Config, cors::Cors, cors_handle, lifetime_hashmap::LifeTimeHashMap};
+use utils::{config::Config, cors::Cors, cors_handle, lifetime_hashmap::LifeTimeHashMap, auth_switch::AuthSwitch};
 
 #[macro_use]
 extern crate rocket;
@@ -46,6 +46,7 @@ async fn launch() -> _ {
     rocket::build()
         // attached midware
         .attach(Cors)
+        .attach(AuthSwitch::new())
         // golbal manage vars
         .manage(database)
         .manage(config.clone())

@@ -10,6 +10,7 @@ use rocket::{
         },
         Header,
     },
+    Request, Response,
 };
 
 pub struct Cors;
@@ -23,7 +24,7 @@ impl Fairing for Cors {
         }
     }
 
-    async fn on_response<'r>(&self, req: &'r rocket::Request<'_>, res: &mut rocket::Response<'r>) {
+    async fn on_response<'r>(&self, req: &'r Request<'_>, res: &mut Response<'r>) {
         let header = req.headers();
         if let Some(s) = header.get_one(ORIGIN.as_str()) {
             res.adjoin_header(Header::new(ACCESS_CONTROL_ALLOW_ORIGIN.as_str(), s));
@@ -41,5 +42,9 @@ impl Fairing for Cors {
             res.adjoin_header(Header::new(ACCESS_CONTROL_ALLOW_HEADERS.as_str(), h));
         }
 
+        res.adjoin_raw_header(
+            hyper::header::ACCESS_CONTROL_EXPOSE_HEADERS.as_str(),
+            "Set-Cookie",
+        );
     }
 }
