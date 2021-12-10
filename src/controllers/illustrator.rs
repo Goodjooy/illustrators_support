@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::{
     data_containers::{
         arts::ArtNew,
@@ -10,10 +8,9 @@ use crate::{
     database::Database,
     entity::{illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
-    utils::lifetime_hashmap::LifeTimeHashMap,
 };
 
-use rocket::{form::Form, http::Status, serde::json::Json, State};
+use rocket::{http::Status, serde::json::Json, State};
 use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 
 crate::generate_controller!(
@@ -37,8 +34,7 @@ async fn new_illustrator(
     _auth: UserLogin,
     input: Json<serde_json::Value>,
     db: &State<Database>,
-    ill_collect: &State<LifeTimeHashMap<String, i64>>,
-) -> RResult<String> {
+) -> RResult<i64> {
     let ill_new = to_rresult!(
         rs,
         super::into_entity::<IllustratorNew>(input),
@@ -53,47 +49,44 @@ async fn new_illustrator(
             .await
     );
 
-    let ident = uuid::Uuid::new_v4();
-    ill_collect.insert(
-        ident.clone().to_string(),
-        res.last_insert_id,
-        Duration::from_secs(3600),
-    );
-
-    RResult::ok(ident.to_string())
+    RResult::ok(res.last_insert_id)
 }
-#[post("/add_arts/<ident>", data = "<file>")]
+#[post("/add_arts/<iid>", data = "<file>")]
 async fn add_art(
     _auth: UserLogin,
-    ident: String,
-    file: rocket::form::Result<'_, Form<ArtNew>>,
+    iid: i64,
+    file: Json<Vec<serde_json::Value>>,
     db: &State<Database>,
-    ill_collect: &State<LifeTimeHashMap<String, i64>>,
 ) -> RResult<&'static str> {
-    let file = to_rresult!(
+    let files = file
+        .into_inner()
+        .into_iter()
+        .map(|f| serde_json::from_value::<ArtNew>(f).ok())
+        .filter(|a| a.is_some())
+        .map(|a| -> illustrator_acts::ActiveModel { a.unwrap().into_save(iid).into() })
+        .collect::<Vec<_>>();
+
+    let _res = to_rresult!(
         rs,
-        file,
-        Status::UnprocessableEntity,
-        "Form Struct Not Match"
-    )
-    .into_inner();
-
-    let iid = to_rresult!(op, ill_collect.get(&ident), "Ident Not Found");
-
-    let arts = file.into_save(iid);
-
-    let iart: illustrator_acts::ActiveModel = arts.into();
-
-    let _res = to_rresult!(rs, iart.insert(db.unwarp()).await);
+        illustrator_acts::Entity::insert_many(files)
+            .exec(db.unwarp())
+            .await
+    );
 
     RResult::ok("Upload File success")
 }
 
 #[get("/all")]
 async fn illustrator_all(_auth: UserLogin, db: &State<Database>) -> RResult<Vec<IllustratorTItle>> {
-    let res = to_rresult!(rs, illustrators::Entity::find().all(db.unwarp()).await);
+    let res = to_rresult!(
+        rs,
+        illustrators::Entity::find()
+            .find_with_related(illustrator_wants::Entity)
+            .all(db.unwarp())
+            .await
+    );
 
-    RResult::ok(res.into_iter().map(|i| i.into()).collect())
+    RResult::ok(res.into_iter().map(|(m, c)| (m, c.len()).into()).collect())
 }
 
 #[get("/<id>")]

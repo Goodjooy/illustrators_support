@@ -4,19 +4,14 @@ use rocket::{fs::NamedFile, http::Status, State};
 use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 
 use crate::{
-    data_containers::{admin::Admin, r_result::RResult, users::UserLogin},
+    data_containers::{r_result::RResult, users::UserLogin},
     database::Database,
     entity::file_stores,
     to_rresult,
     utils::{config::Config, multpart::MultPartFile},
 };
 
-crate::generate_controller!(
-    FileServerController,
-    "/images",
-    user_file,
-    upload
-);
+crate::generate_controller!(FileServerController, "/images", user_file, upload);
 
 async fn load_file(
     file_name: String,

@@ -60,16 +60,18 @@ pub struct IllustratorTItle {
     head: String,
     home: String,
     sponsor: String,
+    wconts: usize,
 }
 
-impl From<illustrators::Model> for IllustratorTItle {
-    fn from(ill: illustrators::Model) -> Self {
+impl From<(illustrators::Model, usize)> for IllustratorTItle {
+    fn from((ill, count): (illustrators::Model, usize)) -> Self {
         Self {
             iid: ill.id,
             name: ill.name,
             head: ill.head,
             home: ill.home,
             sponsor: ill.sponsor,
+            wconts: count,
         }
     }
 }
