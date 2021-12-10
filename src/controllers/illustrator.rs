@@ -1,17 +1,21 @@
 use crate::{
     data_containers::{
-        arts::ArtNew,
+        arts::{ArtNew, ArtSaved},
         illustrator::{Illustrator, IllustratorNew, IllustratorTItle},
         r_result::RResult,
         users::UserLogin,
     },
     database::Database,
-    entity::{illustrator_acts, illustrator_wants, illustrators, users},
+    entity::{file_stores, illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
+    utils::MaxLimitString,
 };
 
 use rocket::{http::Status, serde::json::Json, State};
-use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, QuerySelect, RelationTrait,
+    Set,
+};
 
 crate::generate_controller!(
     IllustratorController,
@@ -58,22 +62,40 @@ async fn add_art(
     file: Json<Vec<serde_json::Value>>,
     db: &State<Database>,
 ) -> RResult<&'static str> {
-    let files = file
+    let arc_news: ArtNew = file
         .into_inner()
         .into_iter()
-        .map(|f| serde_json::from_value::<ArtNew>(f).ok())
+        .map(|f| serde_json::from_value::<MaxLimitString<256>>(f).ok())
         .filter(|a| a.is_some())
-        .map(|a| -> illustrator_acts::ActiveModel { a.unwrap().into_save(iid).into() })
-        .collect::<Vec<_>>();
+        .map(|a| a.unwrap())
+        .collect::<Vec<_>>()
+        .into();
 
-    let _res = to_rresult!(
-        rs,
-        illustrator_acts::Entity::insert_many(files)
-            .exec(db.unwarp())
-            .await
-    );
+    if let Some(condition) = arc_news.search_condition() {
+        let files = to_rresult!(
+            rs,
+            crate::entity::file_stores::Entity::find()
+                .filter(condition)
+                .all(db.unwarp())
+                .await
+        );
+        let files = files
+            .into_iter()
+            .map(|f| ArtSaved::from_model(f, iid))
+            .map(|f| -> illustrator_acts::ActiveModel { f.into() })
+            .collect::<Vec<_>>();
 
-    RResult::ok("Upload File success")
+        let _res = to_rresult!(
+            rs,
+            illustrator_acts::Entity::insert_many(files)
+                .exec(db.unwarp())
+                .await
+        );
+
+        RResult::ok("Upload File success")
+    } else {
+        RResult::status_err(Status::UnprocessableEntity, "No Match Struct Found")
+    }
 }
 
 #[get("/all")]
@@ -100,27 +122,31 @@ async fn illustrator_detial(
         to_rresult!(
             rs,
             illustrators::Entity::find_by_id(id)
-                .find_with_related(illustrator_acts::Entity)
+                .join(
+                    sea_orm::JoinType::InnerJoin,
+                    illustrator_acts::Relation::Illustrators.def(),
+                )
+                .join(
+                    sea_orm::JoinType::InnerJoin,
+                    illustrator_acts::Relation::FileStores.def(),
+                )
+                .group_by(illustrators::Column::Id)
+                .select_with(file_stores::Entity)
                 .all(db.unwarp())
                 .await
         )
         .into_iter()
         .next(),
-        "not found illustrator"
+        Status::NotFound,
+        "Target illustrator Not Found"
     );
 
-    let (_, wants) = to_rresult!(
-        op,
-        to_rresult!(
-            rs,
-            illustrators::Entity::find_by_id(id)
-                .find_with_related(illustrator_wants::Entity)
-                .all(db.unwarp())
-                .await
-        )
-        .into_iter()
-        .next(),
-        "not found illustrator"
+    let wants = to_rresult!(
+        rs,
+        illustrator_wants::Entity::find()
+            .filter(illustrator_wants::Column::Iid.eq(id))
+            .all(db.unwarp())
+            .await
     );
 
     let wants = if wants.len() == 0 {

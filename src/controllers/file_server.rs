@@ -1,14 +1,19 @@
 use std::path::Path;
 
-use rocket::{fs::NamedFile, http::Status, State};
-use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
+use rocket::{
+    form::{Form, Result},
+    fs::NamedFile,
+    http::Status,
+    State,
+};
+use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 
 use crate::{
-    data_containers::{r_result::RResult, users::UserLogin},
+    data_containers::{file_store::FileUpload, r_result::RResult, users::UserLogin},
     database::Database,
     entity::file_stores,
     to_rresult,
-    utils::{config::Config, multpart::MultPartFile},
+    utils::config::Config,
 };
 
 crate::generate_controller!(FileServerController, "/images", user_file, upload);
@@ -52,7 +57,7 @@ async fn user_file(
 #[post("/upload", data = "<file>")]
 async fn upload(
     auth: UserLogin,
-    file: MultPartFile<'_>,
+    file: Result<'_, Form<FileUpload<'_>>>,
     db: &State<Database>,
     config: &State<Config>,
 ) -> RResult<String> {
@@ -62,18 +67,7 @@ async fn upload(
         Status::NonAuthoritativeInformation,
         "No User Id Found"
     );
+    let fu = to_rresult!(rs, file, Status::UnprocessableEntity).into_inner();
 
-    let file_save_path = Path::new(&config.consts.save_dir);
-    let file_url_name = file.filename();
-
-    let fs = file_stores::ActiveModel {
-        uid: Set(uid),
-        is_suit: Set(true as i8),
-        file: Set(file.filename()),
-        ..Default::default()
-    };
-
-    let _res = to_rresult!(rs, file.save_to(file_save_path).await);
-    let _res = to_rresult!(rs, fs.insert(db.unwarp()).await);
-    RResult::ok(file_url_name)
+    fu.save(uid, &db, &config.consts).await
 }

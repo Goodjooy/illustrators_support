@@ -68,8 +68,21 @@
   - 请求体是原始文件二进制（不是 form!!）
   - POST
 
-  ```form
-  src=art_source&file=file_url
+  ```json
+    [
+      {
+        "src":"http://pixiv.cn/XXX-xx",
+        "file":"xxx-xxx-xx-xx.png"
+      },
+      {
+        "source":"http://pixiv.cn/XXX-xx",
+        "img":"xxx-xxx-xx-xx.png"
+      },
+      {
+        "img_src":"http://pixiv.cn/XXX-xx",
+        "image":"xxx-xxx-xx-xx.png"
+      },
+    ]
   ```
 
 - /illustrator/all
@@ -108,12 +121,12 @@
       "sponser": "IllustratorSponserPage",
     "arts": [
       [
-        "xxx-xx-xx-xx-xx.png",
-        false //未审核或者审核未通过，user 看不了
+        "https://pixiv.org/xxx",
+        "xxx-xx-xx-xx-xx.png"
       ],
       [
-        "xxx-xx-xx-xx-xx.jpg",
-        true // 已审核通过，user 看得到
+        "https://pixiv.org/xxx",
+        "xxx-xx-xx-xx-xx.jpg"
       ]
     ],
     "wants": [["WantsName", "WantsQQ"]]

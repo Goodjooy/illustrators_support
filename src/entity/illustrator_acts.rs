@@ -9,8 +9,7 @@ pub struct Model {
     pub id: i64,
     pub iid: i64,
     #[sea_orm(unique)]
-    pub src: String,
-    pub pic: String,
+    pub fid: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -23,11 +22,25 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Illustrators,
+    #[sea_orm(
+        belongs_to = "super::file_stores::Entity",
+        from = "Column::Fid",
+        to = "super::file_stores::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    FileStores,
 }
 
 impl Related<super::illustrators::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Illustrators.def()
+    }
+}
+
+impl Related<super::file_stores::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::FileStores.def()
     }
 }
 

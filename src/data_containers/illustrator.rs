@@ -2,7 +2,7 @@ use sea_orm::Set;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    entity::{illustrator_acts, illustrators, users},
+    entity::{file_stores, illustrators, users},
     utils::{MaxLimitString, RangeLimitString},
 };
 
@@ -77,27 +77,56 @@ impl From<(illustrators::Model, usize)> for IllustratorTItle {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+struct ArtInfo {
+    src: Option<String>,
+    file: String,
+}
+
+impl From<file_stores::Model> for ArtInfo {
+    fn from(f: file_stores::Model) -> Self {
+        Self {
+            src: f.src,
+            file: f.file,
+        }
+    }
+}
+#[derive(Serialize, Deserialize, Clone)]
+struct WantsInfo {
+    name: String,
+    qq: i64,
+}
+
+impl From<users::Model> for WantsInfo {
+    fn from(f: users::Model) -> Self {
+        Self {
+            name: f.name,
+            qq: f.qq,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Illustrator {
     iid: i64,
     name: String,
     head: String,
     home: String,
     sponser: String,
-    arts: Vec<String>,
-    wants: Vec<(String, i64)>,
+    arts: Vec<ArtInfo>,
+    wants: Vec<WantsInfo>,
 }
 
 impl
     From<(
         illustrators::Model,
-        Vec<illustrator_acts::Model>,
+        Vec<file_stores::Model>,
         Vec<users::Model>,
     )> for Illustrator
 {
     fn from(
         (ill, ill_arts, wants): (
             illustrators::Model,
-            Vec<illustrator_acts::Model>,
+            Vec<file_stores::Model>,
             Vec<users::Model>,
         ),
     ) -> Self {
@@ -107,8 +136,8 @@ impl
             head: ill.head,
             home: ill.home,
             sponser: ill.sponsor,
-            arts: ill_arts.into_iter().map(|art| art.pic).collect(),
-            wants: wants.into_iter().map(|u| (u.name, u.qq)).collect(),
+            arts: ill_arts.into_iter().map(|art| art.into()).collect(),
+            wants: wants.into_iter().map(|u| u.into()).collect(),
         }
     }
 }

@@ -1,45 +1,58 @@
-use sea_orm::Set;
+use sea_orm::{ColumnTrait, Condition, Set};
 use serde::Deserialize;
 
-use crate::{entity::illustrator_acts, utils::MaxLimitString};
+use crate::{
+    entity::{file_stores, illustrator_acts},
+    utils::MaxLimitString,
+};
 
-#[derive(FromForm,Deserialize)]
+#[derive(FromForm, Deserialize)]
 pub struct ArtNew {
-    #[field(name = uncased("source"))]
-    #[field(name = uncased("pixiv-src"))]
-    #[field(name = uncased("pixiv_src"))]
-    #[field(name = uncased("img_src"))]
-    #[field(name = uncased("src"))]
-    pub src: MaxLimitString<256>,
     #[field(name = uncased("img"))]
     #[field(name = uncased("image"))]
     #[field(name = uncased("img-src"))]
     #[field(name = uncased("file"))]
-    pub file: MaxLimitString<256>,
+    pub file: Vec<MaxLimitString<256>>,
 }
 impl ArtNew {
-    pub fn into_save(self, iid: i64) -> ArtSaved {
-        let res = ArtSaved {
-            iid,
-            src: self.src.into(),
-            file: self.file.into(),
-        };
-        res
+    pub fn search_condition(self) -> Option<Condition> {
+        let mut condition = Condition::any();
+        if self.file.len() == 0 {
+            None
+        } else {
+            for filename in self.file {
+                condition = condition.add(file_stores::Column::File.eq(filename.as_ref().as_str()));
+            }
+            Some(condition)
+        }
+    }
+}
+
+impl From<Vec<MaxLimitString<256>>> for ArtNew {
+    fn from(s: Vec<MaxLimitString<256>>) -> Self {
+        Self { file: s }
     }
 }
 
 pub struct ArtSaved {
     iid: i64,
-    src: String,
-    file: String,
+    fid: i64,
+}
+
+impl ArtSaved {
+    pub fn from_model(f: file_stores::Model, iid: i64) -> Self {
+        Self {
+            iid: iid,
+            fid: f.id,
+        }
+    }
 }
 
 impl Into<illustrator_acts::ActiveModel> for ArtSaved {
     fn into(self) -> illustrator_acts::ActiveModel {
         illustrator_acts::ActiveModel {
             iid: Set(self.iid),
-            src: Set(self.src),
-            pic: Set(self.file),
+            fid: Set(self.fid),
             ..Default::default()
         }
     }

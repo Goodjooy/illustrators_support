@@ -9,6 +9,8 @@ pub struct Model {
     pub id: i64,
     pub uid: i64,
     pub is_suit: i8,
+    pub src: Option<String>,
+    #[sea_orm(unique)]
     pub file: String,
 }
 
@@ -22,11 +24,19 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Users,
+    #[sea_orm(has_one = "super::illustrator_acts::Entity")]
+    IllustratorActs,
 }
 
 impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Users.def()
+    }
+}
+
+impl Related<super::illustrator_acts::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::IllustratorActs.def()
     }
 }
 

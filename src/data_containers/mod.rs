@@ -9,10 +9,14 @@ pub mod invite;
 pub mod r_result;
 pub mod users;
 pub mod arts;
-
+pub mod file_store;
 #[rocket::async_trait]
 pub trait SelectBy<T> {
     async fn select_by(self, db: &Database) -> Result<Option<T>, sea_orm::DbErr>;
+}
+#[rocket::async_trait]
+pub trait CheckExits {
+    async fn exist(&self,db:&Database)->bool{false}
 }
 
 #[rocket::async_trait]
