@@ -2,6 +2,7 @@ use std::{path::Path, time::Duration};
 
 use crate::{
     data_containers::{
+        arts::ArtNew,
         illustrator::{Illustrator, IllustratorNew, IllustratorTItle},
         r_result::RResult,
         users::UserLogin,
@@ -9,10 +10,10 @@ use crate::{
     database::Database,
     entity::{illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
-    utils::{config::Config, lifetime_hashmap::LifeTimeHashMap, multpart::MultPartFile},
+    utils::{config::Config, lifetime_hashmap::LifeTimeHashMap},
 };
 
-use rocket::{http::Status, serde::json::Json, State};
+use rocket::{form::Form, http::Status, serde::json::Json, State};
 use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 
 crate::generate_controller!(
@@ -62,25 +63,31 @@ async fn new_illustrator(
     RResult::ok(ident.to_string())
 }
 #[post("/add_arts/<ident>", data = "<file>")]
-async fn add_art(
+async fn add_art<'s>(
     _auth: UserLogin,
     ident: String,
-    file: MultPartFile<'_>,
+    file: rocket::form::Result<'s, Form<ArtNew<'s>>>,
     db: &State<Database>,
     config: &State<Config>,
     ill_collect: &State<LifeTimeHashMap<String, i64>>,
 ) -> RResult<&'static str> {
+    let file = to_rresult!(
+        rs,
+        file,
+        Status::UnprocessableEntity,
+        "Form Struct Not Match"
+    )
+    .into_inner();
+
     let iid = to_rresult!(op, ill_collect.get(&ident), "Ident Not Found");
 
-    let iart = illustrator_acts::ActiveModel {
-        iid: Set(iid),
-        pic: Set(file.filename()),
-        ..Default::default()
-    };
+    let (f, arts) = file.into_save(iid);
+
+    let iart: illustrator_acts::ActiveModel = arts.into();
 
     let _res = to_rresult!(rs, iart.insert(db.unwarp()).await);
 
-    let _res = to_rresult!(rs, file.save_to(Path::new(&config.consts.save_dir)).await);
+    let _res = to_rresult!(rs, f.save_to(Path::new(&config.consts.save_dir)).await);
 
     RResult::ok("Upload File success")
 }

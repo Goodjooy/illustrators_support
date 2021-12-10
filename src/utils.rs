@@ -20,7 +20,7 @@ trait IsTrue {}
 impl IsTrue for Assert<true> {}
 
 pub type RangeLimitString<const L: usize, const H: usize> = RangeLimit<String, L, H>;
-pub type MaxLimitString<const H: usize> = RangeLimit<String, 0, H>;
+pub type MaxLimitString<const H: usize> = RangeLimitString< 0, H>;
 
 pub type RangeLimitVec<T, const L: usize, const H: usize> = RangeLimit<Vec<T>, L, H>;
 
@@ -28,3 +28,4 @@ pub type RangeLimitVec<T, const L: usize, const H: usize> = RangeLimit<Vec<T>, L
 pub fn cors_handle(_indata: PathBuf) -> Status {
     Status::Ok
 }
+

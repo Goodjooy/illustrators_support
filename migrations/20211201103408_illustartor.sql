@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS illustrators (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT UNIQUE,
 
     `name` VARCHAR(32) NOT NULL UNIQUE,
-    `home` VARCHAR(256) NOT NULL UNIQUE
+    `head` VARCHAR(256) NOT NULL,
+    `home` VARCHAR(256) NOT NULL,
+    `sponsor` VARCHAR(256) NOT NULL
 
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -13,6 +15,6 @@ CREATE TABLE IF NOT EXISTS illustrator_wants(
     `uid` BIGINT NOT NULL,
     `iid` BIGINT NOT NULL,
 
-    FOREIGN KEY (uid) REFERENCES users(id),
-    FOREIGN KEY (iid) REFERENCES illustrators(id)
+    FOREIGN KEY (`uid`) REFERENCES users(id),
+    FOREIGN KEY (`iid`) REFERENCES illustrators(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

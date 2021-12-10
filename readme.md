@@ -20,24 +20,24 @@
   - POST
 
   ```json
-     {
-        "name":"YouName[4,32]",
-        "qq":1141451919, //YouQQNumber
-        "password": "YouPassword[6,16]",  
-        "invite_code": "InviteCode"
-     }
+  {
+    "name": "YouName[4,32]",
+    "qq": 1141451919, //YouQQNumber
+    "password": "YouPassword[6,16]",
+    "invite_code": "InviteCode"
+  }
   ```
 
 - /user/login
 
   - 提供密码和 qq，即可登录
-  - 没有登出，登录上别的号就登出了，服务器不保存登录session
+  - 没有登出，登录上别的号就登出了，服务器不保存登录 session
   - POST
 
   ```json
   {
     "qq": 1141451919, //YouQQNumber
-    "password": "YouPassword[6,16]",
+    "password": "YouPassword[6,16]"
   }
   ```
 
@@ -51,7 +51,9 @@
   ```json
   {
     "name": "IllustratorName[1,32]",
-    "home": "IllustratorHome[,256]"
+    "head": "IllustratorName[,256]",
+    "home": "IllustratorHome[,256]",
+    "sponser": "IllustratorSponserPage[,256]"
   }
   ```
 
@@ -64,9 +66,11 @@
   - ident 就是先前 new 时的响应体中的 uuid
   - 需要 User 权限（user 登录后的 cookie）
   - 请求体是原始文件二进制（不是 form!!）
-  - POST  
-    body->file to upload  
-    **记得在`Content-Type`中指明文件类型，否则如果依靠文件头匹配不到类型将上传失败**
+  - POST
+
+  ```form
+  src=art_source&file=file_content
+  ```
 
 - /illustrator/all
 
@@ -81,7 +85,9 @@
     {
       "iid": 100, //IllustratorID
       "name": "IllustratorName",
-      "home": "IllustratorHome"
+      "head": "IllustratorName",
+      "home": "IllustratorHome",
+      "sponser": "IllustratorSponserPage"
     }
   ]
   ```
@@ -89,7 +95,7 @@
 - /illustrator/\<id>
 
   - 获取指定画师的信息
-  - 除了基本信息，还有代表作列表和获得的想要组队投票者（话说，这个投票者信息是不是就可以拿去登录了？）
+  - 除了基本信息，还有代表作列表和获得的想要组队投票者
   - 需要 User 权限（user 登录后的 cookie）
   - GET
   - Respond:
@@ -97,8 +103,9 @@
   ```json
   {
     "iid": 100, //"IllustratorID"
-    "name": "IllustratorName",
-    "home": "IllustratorHome",
+    "head": "IllustratorName",
+      "home": "IllustratorHome",
+      "sponser": "IllustratorSponserPage",
     "arts": [
       [
         "xxx-xx-xx-xx-xx.png",
@@ -107,7 +114,7 @@
       [
         "xxx-xx-xx-xx-xx.jpg",
         true // 已审核通过，user 看得到
-      ],
+      ]
     ],
     "wants": [["WantsName", "WantsQQ"]]
   }
@@ -163,13 +170,9 @@
   - POST
 
   ```json
-    {
-    "codes": [
-      "InviteCode1[8,36]",
-      "InviteCode2", 
-      "InviteCode3"
-      ]
-    }
+  {
+    "codes": ["InviteCode1[8,36]", "InviteCode2", "InviteCode3"]
+  }
   ```
 
 - /images/\<path>

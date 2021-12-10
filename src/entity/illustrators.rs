@@ -9,8 +9,9 @@ pub struct Model {
     pub id: i64,
     #[sea_orm(unique)]
     pub name: String,
-    #[sea_orm(unique)]
+    pub head: String,
     pub home: String,
+    pub sponsor: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

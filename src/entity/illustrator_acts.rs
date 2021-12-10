@@ -9,6 +9,8 @@ pub struct Model {
     pub id: i64,
     pub iid: i64,
     pub is_suit: i8,
+    #[sea_orm(unique)]
+    pub src: String,
     pub pic: String,
 }
 

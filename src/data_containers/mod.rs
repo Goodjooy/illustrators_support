@@ -8,6 +8,7 @@ pub mod illustrator;
 pub mod invite;
 pub mod r_result;
 pub mod users;
+pub mod arts;
 
 #[rocket::async_trait]
 pub trait SelectBy<T> {

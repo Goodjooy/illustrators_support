@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS illustrator_acts(
     `iid` BIGINT NOT NULL,
 
     `is_suit` BOOL NOT NULL DEFAULT false,
+    `src` VARCHAR(256) NOT NULL UNIQUE,
     `pic` VARCHAR(256) NOT NULL,
 
-    FOREIGN KEY (iid) REFERENCES illustrators(id)
+    FOREIGN KEY (`iid`) REFERENCES illustrators(id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

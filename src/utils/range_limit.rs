@@ -1,3 +1,4 @@
+use rocket::form::FromFormField;
 use serde::{de, Deserialize, Serialize};
 use std::{
     borrow::Borrow,
@@ -91,6 +92,14 @@ impl<T: Measurable + Debug, const L: usize, const H: usize> Debug for RangeLimit
 impl<T: Measurable + Display, const L: usize, const H: usize> Display for RangeLimit<T, L, H> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.data.fmt(f)
+    }
+}
+
+impl<'v, const L: usize, const H: usize> FromFormField<'v> for RangeLimit<String, L, H> {
+    fn from_value(field: rocket::form::ValueField<'v>) -> rocket::form::Result<'v, Self> {
+        let s = String::from_value(field)?;
+        let res = Self::try_from(s).or_else(|e| Err(rocket::form::Error::custom(e)))?;
+        Ok(res)
     }
 }
 
