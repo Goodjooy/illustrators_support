@@ -81,7 +81,7 @@ pub struct Illustrator {
     head: String,
     home: String,
     sponser: String,
-    arts: Vec<(String, bool)>,
+    arts: Vec<String>,
     wants: Vec<(String, i64)>,
 }
 
@@ -105,10 +105,7 @@ impl
             head: ill.head,
             home: ill.home,
             sponser: ill.sponsor,
-            arts: ill_arts
-                .into_iter()
-                .map(|art| (art.pic, art.is_suit != 0))
-                .collect(),
+            arts: ill_arts.into_iter().map(|art| art.pic).collect(),
             wants: wants.into_iter().map(|u| (u.name, u.qq)).collect(),
         }
     }

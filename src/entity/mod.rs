@@ -3,6 +3,7 @@
 pub mod prelude;
 
 pub mod admins;
+pub mod file_stores;
 pub mod illustrator_acts;
 pub mod illustrator_wants;
 pub mod illustrators;

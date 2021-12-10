@@ -1,16 +1,24 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use rocket::{fs::NamedFile, http::Status, State};
-use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
+use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 
 use crate::{
     data_containers::{admin::Admin, r_result::RResult, users::UserLogin},
     database::Database,
-    entity::illustrator_acts,
-    utils::config::Config,
+    entity::file_stores,
+    to_rresult,
+    utils::{config::Config, multpart::MultPartFile},
 };
 
-crate::generate_controller!(FileServerController, "/images", user_file, admin_file,passage);
+crate::generate_controller!(
+    FileServerController,
+    "/images",
+    user_file,
+    admin_file,
+    passage,
+    upload
+);
 
 async fn load_file(
     file_name: String,
@@ -18,18 +26,18 @@ async fn load_file(
     config: &State<Config>,
     is_admin: bool,
 ) -> Option<NamedFile> {
-    let mut condition = Condition::all().add(illustrator_acts::Column::Pic.eq(file_name.as_str()));
+    let mut condition = Condition::all().add(file_stores::Column::File.eq(file_name.as_str()));
     if !is_admin {
-        condition = condition.add(illustrator_acts::Column::IsSuit.eq(true))
+        condition = condition.add(file_stores::Column::IsSuit.eq(true))
     }
 
-    if let Some(_res) = illustrator_acts::Entity::find()
+    if let Some(res) = file_stores::Entity::find()
         .filter(condition)
         .one(db.unwarp())
         .await
         .ok()?
     {
-        let path = Path::new(&config.consts.save_dir).join(&file_name);
+        let path = Path::new(&config.consts.save_dir).join(&res.file);
         if path.is_file() {
             NamedFile::open(path).await.ok()
         } else {
@@ -68,11 +76,31 @@ fn passage(file_name: String) -> RResult<String> {
     )
 }
 
-#[test]
-fn test_is_file() {
-    let path = Path::new(
-        "M:/rust_project/illustrators_support/SAVES/6e10a45f-88ff-498c-b0a4-a76d8946d10a.jpeg",
+#[post("/upload",data="<file>")]
+async fn upload(
+    auth: UserLogin,
+    file: MultPartFile<'_>,
+    db: &State<Database>,
+    config: &State<Config>,
+) -> RResult<PathBuf> {
+    let uid = to_rresult!(
+        op,
+        auth.id,
+        Status::NonAuthoritativeInformation,
+        "No User Id Found"
     );
 
-    assert_eq!(path.is_file(), true);
+    let file_save_path = Path::new(&config.consts.save_dir);
+    let file_url_name = Path::new("/images").join(file.filename());
+
+    let fs = file_stores::ActiveModel {
+        uid: Set(uid),
+        is_suit: Set(false as i8),
+        file: Set(file.filename()),
+        ..Default::default()
+    };
+
+    let _res = to_rresult!(rs, file.save_to(file_save_path).await);
+    let _res = to_rresult!(rs, fs.insert(db.unwarp()).await);
+    RResult::ok(file_url_name)
 }

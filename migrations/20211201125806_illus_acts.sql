@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS illustrator_acts(
 
     `iid` BIGINT NOT NULL,
 
-    `is_suit` BOOL NOT NULL DEFAULT false,
     `src` VARCHAR(256) NOT NULL UNIQUE,
     `pic` VARCHAR(256) NOT NULL,
 

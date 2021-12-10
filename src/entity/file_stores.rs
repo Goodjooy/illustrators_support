@@ -3,31 +3,30 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "illustrator_acts")]
+#[sea_orm(table_name = "file_stores")]
 pub struct Model {
     #[sea_orm(primary_key, unique)]
     pub id: i64,
-    pub iid: i64,
-    #[sea_orm(unique)]
-    pub src: String,
-    pub pic: String,
+    pub uid: i64,
+    pub is_suit: i8,
+    pub file: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::illustrators::Entity",
-        from = "Column::Iid",
-        to = "super::illustrators::Column::Id",
+        belongs_to = "super::users::Entity",
+        from = "Column::Uid",
+        to = "super::users::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Illustrators,
+    Users,
 }
 
-impl Related<super::illustrators::Entity> for Entity {
+impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Illustrators.def()
+        Relation::Users.def()
     }
 }
 

@@ -1,13 +1,9 @@
-
 use sea_orm::Set;
 
-use crate::{
-    entity::illustrator_acts,
-    utils::{multpart::MultPartFile, MaxLimitString},
-};
+use crate::{entity::illustrator_acts, utils::MaxLimitString};
 
 #[derive(FromForm)]
-pub struct ArtNew<'s> {
+pub struct ArtNew {
     #[field(name = uncased("source"))]
     #[field(name = uncased("pixiv-src"))]
     #[field(name = uncased("pixiv_src"))]
@@ -18,16 +14,16 @@ pub struct ArtNew<'s> {
     #[field(name = uncased("image"))]
     #[field(name = uncased("img-src"))]
     #[field(name = uncased("file"))]
-    pub file: MultPartFile<'s>,
+    pub file: MaxLimitString<256>,
 }
-impl<'s> ArtNew<'s> {
-    pub fn into_save(self, iid: i64) -> (MultPartFile<'s>, ArtSaved) {
+impl ArtNew {
+    pub fn into_save(self, iid: i64) -> ArtSaved {
         let res = ArtSaved {
             iid,
-            src: self.src.into().clone(),
-            file: self.file.filename(),
+            src: self.src.into(),
+            file: self.file.into(),
         };
-        (self.file, res)
+        res
     }
 }
 
@@ -41,7 +37,6 @@ impl Into<illustrator_acts::ActiveModel> for ArtSaved {
     fn into(self) -> illustrator_acts::ActiveModel {
         illustrator_acts::ActiveModel {
             iid: Set(self.iid),
-            is_suit: Set(false as i8),
             src: Set(self.src),
             pic: Set(self.file),
             ..Default::default()

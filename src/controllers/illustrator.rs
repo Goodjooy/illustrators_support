@@ -1,4 +1,4 @@
-use std::{path::Path, time::Duration};
+use std::time::Duration;
 
 use crate::{
     data_containers::{
@@ -10,7 +10,7 @@ use crate::{
     database::Database,
     entity::{illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
-    utils::{config::Config, lifetime_hashmap::LifeTimeHashMap},
+    utils::lifetime_hashmap::LifeTimeHashMap,
 };
 
 use rocket::{form::Form, http::Status, serde::json::Json, State};
@@ -63,12 +63,11 @@ async fn new_illustrator(
     RResult::ok(ident.to_string())
 }
 #[post("/add_arts/<ident>", data = "<file>")]
-async fn add_art<'s>(
+async fn add_art(
     _auth: UserLogin,
     ident: String,
-    file: rocket::form::Result<'s, Form<ArtNew<'s>>>,
+    file: rocket::form::Result<'_, Form<ArtNew>>,
     db: &State<Database>,
-    config: &State<Config>,
     ill_collect: &State<LifeTimeHashMap<String, i64>>,
 ) -> RResult<&'static str> {
     let file = to_rresult!(
@@ -81,13 +80,11 @@ async fn add_art<'s>(
 
     let iid = to_rresult!(op, ill_collect.get(&ident), "Ident Not Found");
 
-    let (f, arts) = file.into_save(iid);
+    let arts = file.into_save(iid);
 
     let iart: illustrator_acts::ActiveModel = arts.into();
 
     let _res = to_rresult!(rs, iart.insert(db.unwarp()).await);
-
-    let _res = to_rresult!(rs, f.save_to(Path::new(&config.consts.save_dir)).await);
 
     RResult::ok("Upload File success")
 }

@@ -134,7 +134,7 @@ macro_rules! to_rresult {
         }
     };
 
-    (op, $x:expr,  $s:expr) => {
+    (op, $x:expr, $sta:expr, $s:expr) => {
         match $x {
             Some(d) => d,
             None => return crate::data_containers::r_result::RResult::status_err($sta, $s),

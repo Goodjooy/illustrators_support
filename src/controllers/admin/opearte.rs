@@ -3,7 +3,7 @@ use crate::{
         admin::Admin, invite::InviteCodeNew, r_result::RResult, TryIntoWithDatabase,
     },
     database::Database,
-    entity::{illustrator_acts, invites},
+    entity::invites,
     to_rresult,
 };
 use rocket::{http::Status, serde::json::Json, State};
@@ -38,18 +38,19 @@ pub async fn make_art_suti(
     art_name: String,
     db: &State<Database>,
 ) -> RResult<&'static str> {
-    if let Some(res) = to_rresult!(
+    match to_rresult!(
         rs,
-        illustrator_acts::Entity::find()
-            .filter(illustrator_acts::Column::Pic.eq(art_name))
+        crate::entity::file_stores::Entity::find()
+            .filter(crate::entity::file_stores::Column::File.eq(art_name))
             .one(db.unwarp())
             .await
     ) {
-        let mut active: illustrator_acts::ActiveModel = res.into();
-        active.is_suit = Set(true as i8);
-        let _r = to_rresult!(rs, active.update(db.unwarp()).await);
-        RResult::ok("Switch TO SUIT Sucess")
-    } else {
-        RResult::err("No Such File")
+        Some(res) => {
+            let mut active: crate::entity::file_stores::ActiveModel = res.into();
+            active.is_suit = Set(true as i8);
+            let _r = to_rresult!(rs, active.update(db.unwarp()).await);
+            RResult::ok("Switch TO suit Sucess")
+        }
+        _ => RResult::err("No Such File"),
     }
 }
