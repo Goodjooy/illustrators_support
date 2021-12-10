@@ -62,26 +62,17 @@
 
 - /illustrator/add_arts/\<ident>
 
-  - 通过 ident 为指定的画师添加作品（是不是还要有个清理 ident 的接口？）
-  - ident 就是先前 new 时的响应体中的 uuid
+  - 通过 ident 为指定的画师添加作品
+  - ident 就是画师的 iid
   - 需要 User 权限（user 登录后的 cookie）
-  - 请求体是原始文件二进制（不是 form!!）
+  - 请求为上传文件名列表
   - POST
 
   ```json
     [
-      {
-        "src":"http://pixiv.cn/XXX-xx",
-        "file":"xxx-xxx-xx-xx.png"
-      },
-      {
-        "source":"http://pixiv.cn/XXX-xx",
-        "img":"xxx-xxx-xx-xx.png"
-      },
-      {
-        "img_src":"http://pixiv.cn/XXX-xx",
-        "image":"xxx-xxx-xx-xx.png"
-      },
+      "xxx-xxx-xx-xx.png"
+      "xxx-xxx-xx-xx.png"
+      "xxx-xxx-xx-xx.png"
     ]
   ```
 
@@ -100,7 +91,8 @@
       "name": "IllustratorName",
       "head": "IllustratorName",
       "home": "IllustratorHome",
-      "sponser": "IllustratorSponserPage"
+      "sponser": "IllustratorSponserPage",
+      "wconts": 114 //wants counts
     }
   ]
   ```
@@ -117,19 +109,19 @@
   {
     "iid": 100, //"IllustratorID"
     "head": "IllustratorName",
-      "home": "IllustratorHome",
-      "sponser": "IllustratorSponserPage",
+    "home": "IllustratorHome",
+    "sponser": "IllustratorSponserPage",
     "arts": [
-      [
-        "https://pixiv.org/xxx",
-        "xxx-xx-xx-xx-xx.png"
-      ],
-      [
-        "https://pixiv.org/xxx",
-        "xxx-xx-xx-xx-xx.jpg"
-      ]
+      {
+        "src": null,
+        "file": "xxx-xx-xx-xx-xx.png"
+      },
+      {
+        "src": null,
+        "file": "xxx-xx-xx-xx-xx.png"
+      }
     ],
-    "wants": [["WantsName", "WantsQQ"]]
+    "wants": [{ "name": "WantsName", "qq": "WantsQQ" }]
   }
   ```
 
@@ -191,16 +183,19 @@
 - /images/\<path>
   - 还记得刚刚的画师作品列表嘛
   - 把文件名放进 path，就可以看到作品了
-  - Admin 权限 已审核与未审核图片
-  - User 权限 已审核图片
-  - 无权限 什么都看不了
   - GET
-  
+
 - /images/upload
-  - 文件上传接口  
+  - 文件上传接口
   - User 权限 需要
   - POST
-  - 请求体就是文件本体
+
+  ```form
+  src=[Option]https://www.abab.cccc&file=file_to_upload
+  ```
+
+  - Respond 
+    - 上传的文件的文件名
 
 ## 允许上传文件类型
 
@@ -257,7 +252,7 @@
 
 ## 启动
 
-- 将`migrations`内的 `*.sql`文件在指定数据库中执行
+- 执行 `pyhton3 script.py` 将`migrations`内sql 文件合并为`./sqls/data.sql`,向数据库添加数据表
 - 在执行文件所在目录添加配置文件 `Rocket.toml` 和 `Config.toml`，并完成配置
 - 当配置文件准备妥当后，直接运行可执行文件 `illustrators_support` 即可启动服务
 
