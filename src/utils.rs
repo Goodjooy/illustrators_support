@@ -2,7 +2,7 @@
  * @Author: Your name
  * @Date:   2021-12-01 19:34:15
  * @Last Modified by:   Your name
- * @Last Modified time: 2021-12-11 14:11:06
+ * @Last Modified time: 2021-12-11 17:52:19
  */
 use std::path::PathBuf;
 
@@ -38,7 +38,7 @@ pub fn cors_handle(_indata: PathBuf) -> Status {
     Status::Ok
 }
 
-#[catch(400)]
+#[catch(default)]
 pub fn catch(status:Status,_req:&Request<'_>)->RResult<()>{
     RResult::status_err(status, format!("Unhandled repsond error[{}]",status))
 }

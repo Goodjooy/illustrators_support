@@ -7,7 +7,7 @@ use rocket::{
  * @Author: Your name
  * @Date:   2021-12-11 13:35:17
  * @Last Modified by:   Your name
- * @Last Modified time: 2021-12-11 14:16:05
+ * @Last Modified time: 2021-12-11 18:19:15
  */
 
 pub struct NetLogger;
@@ -22,7 +22,7 @@ fn into_unknow_string<T: ToString>(data: Option<T>) -> String {
 impl Fairing for NetLogger {
     fn info(&self) -> rocket::fairing::Info {
         rocket::fairing::Info {
-            name: "Auth Switch",
+            name: "Net Logger",
             kind: Kind::Response | Kind::Request,
         }
     }
