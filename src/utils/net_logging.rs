@@ -1,3 +1,4 @@
+use log::info;
 use rocket::{
     fairing::{Fairing, Kind},
     Data, Request, Response,
@@ -7,7 +8,7 @@ use rocket::{
  * @Author: Your name
  * @Date:   2021-12-11 13:35:17
  * @Last Modified by:   Your name
- * @Last Modified time: 2021-12-11 18:19:15
+ * @Last Modified time: 2021-12-11 21:16:22
  */
 
 pub struct NetLogger;
@@ -27,22 +28,20 @@ impl Fairing for NetLogger {
         }
     }
     async fn on_request(&self, req: &mut Request<'_>, _data: &mut Data<'_>) {
-        log::info!("--------------------------------------------");
-        log::info!(
-            "Request Entry from {} | {}",
-            into_unknow_string(req.client_ip()),
-            req.uri()
+        info!(
+            "--------------------------------------------\nRequest Entry from {} | {}\nMethod: {}\nContent type: {}\n--------------------------------------------"
+        , into_unknow_string(req.client_ip()),
+        req.uri()
+        , req.method()
+        , into_unknow_string(req.content_type())
         );
-        log::info!("Method: {}", req.method());
-        log::info!("Content type: {}", into_unknow_string(req.content_type()));
-        log::info!("--------------------------------------------");
     }
 
     async fn on_response<'r>(&self, req: &'r Request<'_>, res: &mut Response<'r>) {
-        log::info!("--------------------------------------------");
-        log::info!("Request Leave for {}", into_unknow_string(req.client_ip()));
-        log::info!("Status: {}", res.status());
-        log::info!("Content type: {}", into_unknow_string(res.content_type()));
-        log::info!("--------------------------------------------");
+        info!("--------------------------------------------\nRespond Leave for {} | {}\nStatus: {}\nContent type: {}\n--------------------------------------------"
+        ,
+        into_unknow_string(req.client_ip()),
+        req.uri(), res.status(), into_unknow_string(res.content_type())
+    );
     }
 }

@@ -1,3 +1,9 @@
+/**
+ * @Author: Your name
+ * @Date:   2021-12-01 20:56:53
+ * @Last Modified by:   Your name
+ * @Last Modified time: 2021-12-11 21:25:59
+ */
 use crate::{
     data_containers::{
         arts::{ArtNew, ArtSaved},
@@ -123,11 +129,11 @@ async fn illustrator_detial(
             rs,
             illustrators::Entity::find_by_id(id)
                 .join_rev(
-                    sea_orm::JoinType::InnerJoin,
+                    sea_orm::JoinType::LeftJoin,
                     illustrator_acts::Relation::Illustrators.def(),
                 )
                 .join(
-                    sea_orm::JoinType::InnerJoin,
+                    sea_orm::JoinType::LeftJoin,
                     illustrator_acts::Relation::FileStores.def(),
                 )
              //   .group_by(illustrators::Column::Id)
