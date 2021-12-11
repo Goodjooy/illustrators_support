@@ -1,22 +1,28 @@
+/**
+ * @Author: Your name
+ * @Date:   2021-12-10 08:54:36
+ * @Last Modified by:   Your name
+ * @Last Modified time: 2021-12-11 14:01:56
+ */
 use rocket::http::Cookie;
 use serde::Serialize;
 
 use crate::{database::Database, utils::config::Config};
 
 pub mod admin;
+pub mod arts;
+pub mod file_store;
 pub mod illustrator;
 pub mod invite;
 pub mod r_result;
 pub mod users;
-pub mod arts;
-pub mod file_store;
 #[rocket::async_trait]
 pub trait SelectBy<T> {
     async fn select_by(self, db: &Database) -> Result<Option<T>, sea_orm::DbErr>;
 }
 #[rocket::async_trait]
 pub trait CheckExits {
-    async fn exist(&self,db:&Database)->Result<bool,sea_orm::DbErr>;
+    async fn exist(&self, db: &Database) -> Result<bool, sea_orm::DbErr>;
 }
 
 #[rocket::async_trait]
@@ -59,14 +65,17 @@ macro_rules! from_cooke {
             ) -> rocket::request::Outcome<Self, Self::Error> {
                 let jar = request.cookies();
                 if let Some(cookie) = jar.get_private($cm) {
+                    log::info!("Load Auth `{}` from Cookie", stringify!($tg));
                     let value = cookie.value();
                     let au = RResult::from_result(serde_json::from_str::<$tg>(value));
                     au.into_forword()
                 } else if let Some(cookie) = jar.get_private_pending($cm) {
                     let value = cookie.value();
+                    log::info!("Load Auth `{}` from HEAD Authenticated", stringify!($tg));
                     let au = RResult::from_result(serde_json::from_str::<$tg>(value));
                     au.into_forword()
                 } else {
+                    log::info!("No Auth info Found for {}", stringify!($tg));
                     rocket::outcome::Outcome::Forward(())
                 }
             }

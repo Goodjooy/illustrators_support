@@ -1,8 +1,9 @@
 /target
 
-
 Rocket.toml
 Config.toml
+
+.history/
 .env
 build.rs
 

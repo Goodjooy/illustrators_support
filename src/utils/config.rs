@@ -1,3 +1,10 @@
+/**
+ * @Author: Your name
+ * @Date:   2021-12-07 16:30:22
+ * @Last Modified by:   Your name
+ * @Last Modified time: 2021-12-11 13:36:12
+ */
+
 use serde::Deserialize;
 
 use super::RangeLimitString;
@@ -13,6 +20,7 @@ pub struct Config {
 #[derive(Deserialize,Clone)]
 pub struct DbConfig {
     pub url: String,
+    pub db_log:bool,
     pub max_conn: u32,
     pub min_conn: u32,
 }
@@ -23,6 +31,7 @@ impl Default for DbConfig {
             url: "".to_string(),
             max_conn: 8,
             min_conn: 0,
+            db_log: true,
         }
     }
 }
@@ -46,6 +55,7 @@ pub struct ConstConfig {
     pub save_dir: String,
     //pub user_cookie: String,
     //pub admin_cookie: String,
+
 }
 
 impl Default for ConstConfig {

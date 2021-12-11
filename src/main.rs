@@ -1,3 +1,9 @@
+/**
+ * @Author: Your name
+ * @Date:   2021-12-01 18:00:02
+ * @Last Modified by:   Your name
+ * @Last Modified time: 2021-12-11 14:14:34
+ */
 use crate::controllers::{file_server::FileServerController, illustrator::IllustratorController};
 use std::collections::HashMap;
 
@@ -7,9 +13,9 @@ use figment::{
     providers::{Format, Toml},
     Figment,
 };
-
-use utils::{config::Config, cors::Cors, cors_handle, lifetime_hashmap::LifeTimeHashMap, auth_switch::AuthSwitch};
-
+use std::io::Write;
+use utils::{config::Config, cors::Cors, cors_handle, lifetime_hashmap::LifeTimeHashMap, auth_switch::AuthSwitch, net_logging::NetLogger};
+use chrono::Local;
 #[macro_use]
 extern crate rocket;
 extern crate sea_orm;
@@ -23,6 +29,19 @@ mod utils;
 
 #[rocket::launch]
 async fn launch() -> _ {
+    env_logger::Builder::new()
+    .format(|buf,record|{
+        writeln!(
+            buf,"{} [{}] - {}",
+            Local::now().format("%Y-%m-%dT%H:%M:%S"),
+            record.level(),
+            record.args()
+        )
+    })
+    .filter_level(log::LevelFilter::Info)
+
+    .init();
+
     // load config
     let config: Config = Figment::new()
         .merge(Toml::file("./Config.toml"))
@@ -46,6 +65,7 @@ async fn launch() -> _ {
     rocket::build()
         // attached midware
         .attach(Cors)
+        .attach(NetLogger)
         .attach(AuthSwitch::new())
         // golbal manage vars
         .manage(database)
@@ -61,4 +81,7 @@ async fn launch() -> _ {
             IllustratorController::routes(),
         )
         .mount(AdminController::base(), AdminController::routes())
+
+        //err catch
+        .register("/", catchers![utils::catch])
 }

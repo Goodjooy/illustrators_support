@@ -5,7 +5,7 @@ edition = "2021"
 author=["Frozen String"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[target.x86_64-unknown-linux-gun]
+[target.x86_64-unknown-linux-gnu]
 linker = "'x86_64-unknown-linux-gnu-gcc"
 [target.x86_64-unknown-linux-musl]
 linker = "'x86_64-unknown-linux-musl-gcc"
@@ -16,6 +16,8 @@ lazy_static = "1.4.0"
 rust-crypto = "^0.2"
 figment = "0.10.6"
 chrono = {version="0.4",features=["serde"]}
+log = "0.4.14"
+env_logger = "0.9.0"
 
 
 # data base crate

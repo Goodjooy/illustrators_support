@@ -1,3 +1,9 @@
+/**
+ * @Author: Your name
+ * @Date:   2021-12-01 19:29:57
+ * @Last Modified by:   Your name
+ * @Last Modified time: 2021-12-11 14:07:38
+ */
 use std::{error::Error, io::Cursor};
 
 use rocket::{
@@ -37,14 +43,18 @@ impl<T: Serialize> Serialize for RResult<T> {
 
 impl<T: Serialize> RResult<T> {
     fn new_success(data: T) -> Self {
+        info!("into RResult Success");
         Self::Success(data)
     }
 
     fn new_error<M: ToString>(msg: M) -> Self {
-        Self::Error(Status::NotAcceptable, msg.to_string())
+        Self::err_with_status(Status::NotAcceptable, msg.to_string())
     }
     fn err_with_status<M: ToString>(status: Status, msg: M) -> Self {
-        Self::Error(status, msg.to_string())
+        let msg = msg.to_string();
+        log::error!("into RResult Error status code: {}`", &status,);
+        log::error!("Error Message: `{}`", &msg);
+        Self::Error(status, msg)
     }
 
     pub fn from_result<E: ToString>(res: Result<T, E>) -> Self {
@@ -117,6 +127,8 @@ impl<'r, T: Serialize> Responder<'r, 'static> for RResult<T> {
             RResult::Success(_) => Status::Ok,
             RResult::Error(s, _) => s,
         };
+
+        log::info!("Respond by RRsult | status: {}, content-size: {}",status,t.len());
 
         Response::build()
             .header(ContentType::JSON)
