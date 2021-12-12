@@ -2,7 +2,7 @@
  * @Author: Your name
  * @Date:   2021-12-12 10:32:55
  * @Last Modified by:   Your name
- * @Last Modified time: 2021-12-12 11:03:04
+ * @Last Modified time: 2021-12-13 00:00:40
  */
 use std::path::Path;
 
@@ -16,7 +16,7 @@ use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 
 use crate::{
     data_containers::{
-        file_store::FileUpload, file_store::FileUploads, r_result::RResult, users::UserLogin,
+        file_store::FileUpload, file_store::{ Files}, r_result::RResult, users::UserLogin,
     },
     database::Database,
     entity::file_stores,
@@ -83,7 +83,7 @@ async fn upload(
 #[post("/uploads", data = "<file>")]
 async fn uploads(
     auth: UserLogin,
-    file: Result<'_, Form<FileUploads<'_>>>,
+    file: Result<'_, Form<Files<'_>>>,
     db: &State<Database>,
     config: &State<Config>,
 ) -> RResult<Vec<RResult<String>>> {
@@ -94,8 +94,9 @@ async fn uploads(
         "No User Id Found"
     );
     let fu = to_rresult!(rs, file, Status::UnprocessableEntity).into_inner();
-    let mut res = Vec::with_capacity(fu.data.len());
-    for f in fu.data {
+    log::info!("file counts {}",fu.files.len());
+    let mut res = Vec::with_capacity(fu.files.len());
+    for f in fu.files {
         //res.push(f.save(uid, &db, &config.consts).await);
         res.push(RResult::ok(format!("{}",f.filename())))
     }

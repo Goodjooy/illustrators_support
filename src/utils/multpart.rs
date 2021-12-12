@@ -2,7 +2,7 @@
  * @Author: Your name
  * @Date:   2021-12-03 18:28:05
  * @Last Modified by:   Your name
- * @Last Modified time: 2021-12-12 15:59:55
+ * @Last Modified time: 2021-12-12 22:24:40
  */
 use rocket::{form::FromFormField, data::{FromData, ToByteUnit}, http::Status};
 use std::path::Path;
@@ -132,6 +132,8 @@ impl<'r> FromData<'r> for MultPartFile<'r> {
 #[rocket::async_trait]
 impl<'v> FromFormField<'v> for MultPartFile<'v> {
     async fn from_data(field: rocket::form::DataField<'v, '_>) -> rocket::form::Result<'v, Self> {
+        log::info!("loading form field {} | {:?}",&field.content_type,&field.file_name);
+
         let limlt = field
             .request
             .limits()
