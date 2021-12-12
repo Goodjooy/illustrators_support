@@ -1,3 +1,9 @@
+/**
+ * @Author: Your name
+ * @Date:   2021-12-12 10:32:55
+ * @Last Modified by:   Your name
+ * @Last Modified time: 2021-12-12 11:03:04
+ */
 use std::path::Path;
 
 use rocket::{
@@ -9,14 +15,16 @@ use rocket::{
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 
 use crate::{
-    data_containers::{file_store::FileUpload, r_result::RResult, users::UserLogin},
+    data_containers::{
+        file_store::FileUpload, file_store::FileUploads, r_result::RResult, users::UserLogin,
+    },
     database::Database,
     entity::file_stores,
     to_rresult,
     utils::config::Config,
 };
 
-crate::generate_controller!(FileServerController, "/images", user_file, upload);
+crate::generate_controller!(FileServerController, "/images", user_file, upload, uploads);
 
 async fn load_file(
     file_name: String,
@@ -70,4 +78,27 @@ async fn upload(
     let fu = to_rresult!(rs, file, Status::UnprocessableEntity).into_inner();
 
     fu.save(uid, &db, &config.consts).await
+}
+
+#[post("/uploads", data = "<file>")]
+async fn uploads(
+    auth: UserLogin,
+    file: Result<'_, Form<FileUploads<'_>>>,
+    db: &State<Database>,
+    config: &State<Config>,
+) -> RResult<Vec<RResult<String>>> {
+    let uid = to_rresult!(
+        op,
+        auth.id,
+        Status::NonAuthoritativeInformation,
+        "No User Id Found"
+    );
+    let fu = to_rresult!(rs, file, Status::UnprocessableEntity).into_inner();
+    let mut res = Vec::with_capacity(fu.data.len());
+    for f in fu.data {
+        //res.push(f.save(uid, &db, &config.consts).await);
+        res.push(RResult::ok(format!("{}",f.filename())))
+    }
+    log::info!("{:?}",res);
+    RResult::ok(res)
 }

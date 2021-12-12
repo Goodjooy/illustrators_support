@@ -1,3 +1,9 @@
+/**
+ * @Author: Your name
+ * @Date:   2021-12-10 18:12:44
+ * @Last Modified by:   Your name
+ * @Last Modified time: 2021-12-12 11:02:54
+ */
 use std::path::Path;
 
 use sea_orm::{ActiveModelTrait, Set};
@@ -13,8 +19,18 @@ use super::r_result::RResult;
 
 #[derive(FromForm)]
 pub struct FileUpload<'s> {
+    //#[field(default = "Unknown")]
     src: Option<MaxLimitString<256>>,
     file: MultPartFile<'s>,
+}
+#[derive(FromForm)]
+pub struct f<'v>{
+    pub i :String,
+    pub v:MultPartFile<'v>
+}
+#[derive(FromForm)]
+pub struct FileUploads<'v>{
+    pub data:Vec<MultPartFile<'v>>
 }
 
 impl FileUpload<'_> {

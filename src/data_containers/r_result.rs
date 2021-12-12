@@ -2,7 +2,7 @@
  * @Author: Your name
  * @Date:   2021-12-01 19:29:57
  * @Last Modified by:   Your name
- * @Last Modified time: 2021-12-11 14:07:38
+ * @Last Modified time: 2021-12-12 10:59:39
  */
 use std::{error::Error, io::Cursor};
 
@@ -13,7 +13,7 @@ use rocket::{
     Response,
 };
 use serde::{ser::SerializeStruct, Serialize};
-
+#[derive(Debug)]
 pub enum RResult<T: Serialize> {
     Success(T),
     Error(Status, String),

@@ -18,3 +18,5 @@ pack/
 
 *.log
 *.txt
+
+scripts/test*

@@ -2,7 +2,7 @@
  * @Author: Your name
  * @Date:   2021-12-01 20:56:53
  * @Last Modified by:   Your name
- * @Last Modified time: 2021-12-11 21:25:59
+ * @Last Modified time: 2021-12-12 00:51:01
  */
 use crate::{
     data_containers::{
@@ -136,7 +136,6 @@ async fn illustrator_detial(
                     sea_orm::JoinType::LeftJoin,
                     illustrator_acts::Relation::FileStores.def(),
                 )
-             //   .group_by(illustrators::Column::Id)
                 .select_with(file_stores::Entity)
                 .all(db.unwarp())
                 .await

@@ -35,6 +35,7 @@ impl Fairing for NetLogger {
         , req.method()
         , into_unknow_string(req.content_type())
         );
+        
     }
 
     async fn on_response<'r>(&self, req: &'r Request<'_>, res: &mut Response<'r>) {
