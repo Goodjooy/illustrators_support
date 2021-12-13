@@ -13,10 +13,12 @@ use crate::{
     database::Database,
     entity::file_stores,
     to_rresult,
-    utils::{config::const_value::ConstConfig, multpart::MultPartFile, MaxLimitString},
+    utils::{
+        config::const_value::ConstConfig,
+        data_structs::{r_result::RResult, MaxLimitString},
+        multpart::MultPartFile,
+    },
 };
-
-use super::r_result::RResult;
 
 #[derive(FromForm)]
 pub struct FileUpload<'s> {

@@ -2,9 +2,8 @@ use rocket::State;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 
 use crate::{
-    data_containers::{admin::Admin, r_result::RResult},
-    database::Database,
-    to_rresult,
+    data_containers::admin::Admin, database::Database, to_rresult,
+    utils::data_structs::r_result::RResult,
 };
 
 #[post("/images/<art_name>")]
@@ -29,4 +28,3 @@ pub async fn make_art_suti(
         _ => RResult::err("No Such File"),
     }
 }
-

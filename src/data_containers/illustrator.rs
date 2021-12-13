@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::{file_stores, illustrators, users},
-    utils::{MaxLimitString, RangeLimitString},
+    utils::data_structs::{MaxLimitString, RangeLimitString},
 };
 
 #[derive(Serialize, Deserialize, Clone)]

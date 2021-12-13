@@ -14,8 +14,7 @@ use figment::{
     Figment,
 };
 use utils::{
-    lifetime_hashmap::LifeTimeHashMap,
-    mid_wares::{auth_switch::AuthSwitch, cors::Cors, net_logging::NetLogger}, config::Config, cors_handle,
+    mid_wares::{auth_switch::AuthSwitch, cors::Cors, net_logging::NetLogger}, config::Config, cors_handle, data_structs::lifetime_hashmap::LifeTimeHashMap,
 };
 #[macro_use]
 extern crate rocket;

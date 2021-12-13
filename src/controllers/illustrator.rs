@@ -8,13 +8,12 @@ use crate::{
     data_containers::{
         arts::{ArtNew, ArtSaved},
         illustrator::{Illustrator, IllustratorNew, IllustratorTItle},
-        r_result::RResult,
         users::UserLogin,
     },
     database::Database,
     entity::{file_stores, illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
-    utils::MaxLimitString,
+    utils::data_structs::{r_result::RResult, MaxLimitString},
 };
 
 use rocket::{http::Status, serde::json::Json, State};
@@ -183,7 +182,8 @@ async fn want_illustrator(auth: UserLogin, id: i64, db: &State<Database>) -> RRe
                         .add(illustrator_wants::Column::Uid.eq(uid))
                         .add(illustrator_wants::Column::Iid.eq(id))
                 )
-                .one(db.unwarp()).await
+                .one(db.unwarp())
+                .await
         );
 
         if let None = res {

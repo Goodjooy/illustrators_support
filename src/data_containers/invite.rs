@@ -3,12 +3,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::invites,
-    utils::{RangeLimitString, RangeLimitVec},
+    utils::data_structs::{RangeLimitString, RangeLimitVec},
 };
 
 use super::{SelectBy, TryIntoWithDatabase};
 
-#[derive(Serialize, Deserialize,Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct InviteCodeNew {
     codes: RangeLimitVec<RangeLimitString<8, 36>, 1, 3>,
 }
@@ -75,15 +75,15 @@ impl SelectBy<invites::Model> for String {
     }
 }
 
-#[derive(Deserialize,Serialize)]
-pub struct CodeSimple{
-    pub id:i64,
-    pub value:String
+#[derive(Deserialize, Serialize)]
+pub struct CodeSimple {
+    pub id: i64,
+    pub value: String,
 }
 
 impl From<invites::Model> for CodeSimple {
     fn from(d: invites::Model) -> Self {
-        Self{
+        Self {
             id: d.id,
             value: d.code,
         }

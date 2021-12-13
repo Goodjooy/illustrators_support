@@ -142,20 +142,20 @@ macro_rules! to_rresult {
     (op, $x:expr, $s:expr) => {
         match $x {
             Some(d) => d,
-            None => return crate::data_containers::r_result::RResult::err($s),
+            None => return crate::utils::data_structs::r_result::RResult::err($s),
         }
     };
 
     (op, $x:expr, $sta:expr, $s:expr) => {
         match $x {
             Some(d) => d,
-            None => return crate::data_containers::r_result::RResult::status_err($sta, $s),
+            None => return crate::utils::data_structs::r_result::RResult::status_err($sta, $s),
         }
     };
 
     (op_rev, $x:expr, $s:expr) => {
         match $x {
-            Some(_) => returncrate::data_containers::r_result::RResult::err($s),
+            Some(_) => returncrate::utils::data_structs::r_result::RResult::err($s),
             None => (),
         }
     };
@@ -163,14 +163,14 @@ macro_rules! to_rresult {
     (rs, $x:expr) => {
         match $x {
             Ok(d) => d,
-            Err(err) => return crate::data_containers::r_result::RResult::err(err),
+            Err(err) => return crate::utils::data_structs::r_result::RResult::err(err),
         }
     };
 
     (rs, $x:expr, $sta:expr) => {
         match $x {
             Ok(d) => d,
-            Err(err) => return crate::data_containers::r_result::RResult::status_err($sta, err),
+            Err(err) => return crate::utils::data_structs::r_result::RResult::status_err($sta, err),
         }
     };
 
@@ -178,7 +178,7 @@ macro_rules! to_rresult {
         match $x {
             Ok(d) => d,
             Err(err) => {
-                return crate::data_containers::r_result::RResult::err(format!(
+                return crate::utils::data_structs::r_result::RResult::err(format!(
                     "{} => {}",
                     $info, err
                 ))
@@ -190,7 +190,7 @@ macro_rules! to_rresult {
         match $x {
             Ok(d) => d,
             Err(err) => {
-                return crate::data_containers::r_result::RResult::status_err(
+                return crate::utils::data_structs::r_result::RResult::status_err(
                     $sta,
                     format!("{} => {}", $info, err),
                 )

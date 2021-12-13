@@ -1,21 +1,19 @@
 use crate::data_containers::{IntoCookie, SelectBy, TryIntoWithConfig};
 
 use crate::utils::config::Config;
+use crate::utils::data_structs::r_result::RResult;
 use crate::{data_containers::admin::Admin, database::Database};
 
 use rocket::http::Status;
 use rocket::{http::CookieJar, serde::json::Json, State};
 use sea_orm::ActiveModelTrait;
 
-use crate::{
-    data_containers::{admin::AdminNew, r_result::RResult},
-    entity::admins,
-    to_rresult,
-};
+use crate::{data_containers::admin::AdminNew, entity::admins, to_rresult};
 
+mod illustrator;
 mod invite_code;
 mod serve_image;
-mod illustrator;
+mod user;
 
 const ADMIN_COOKIE_NAME: &str = "Admin-Auth";
 
@@ -64,7 +62,7 @@ async fn admin_login(
     db: &State<Database>,
     cookes: &CookieJar<'_>,
 ) -> RResult<&'static str> {
-    let admin =  to_rresult!(
+    let admin = to_rresult!(
         rs,
         super::into_entity::<Admin>(input),
         Status::UnprocessableEntity

@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 use crate::{
     entity::{file_stores, illustrator_acts},
-    utils::MaxLimitString,
+    utils::data_structs::MaxLimitString,
 };
 
 #[derive(FromForm, Deserialize)]

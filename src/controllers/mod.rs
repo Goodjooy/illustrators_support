@@ -37,8 +37,8 @@ macro_rules! generate_controller {
 macro_rules! no_auth_handle {
     ($method:path,$n:ident,$au:ident,$path:literal) => {
         #[$method("/<path..>", rank = 4)]
-        fn $n(path: std::path::PathBuf) -> crate::data_containers::r_result::RResult<String> {
-            crate::data_containers::r_result::RResult::status_err(
+        fn $n(path: std::path::PathBuf) -> crate::utils::data_structs::r_result::RResult<String> {
+            crate::utils::data_structs::r_result::RResult::status_err(
                 rocket::http::Status::Unauthorized,
                 format!(
                     "`{}` AUTH Need for `/{}/{}`",

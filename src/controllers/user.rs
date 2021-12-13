@@ -1,4 +1,7 @@
-use crate::data_containers::{IntoCookie, TryIntoWithDatabase};
+use crate::{
+    data_containers::{IntoCookie, TryIntoWithDatabase},
+    utils::data_structs::r_result::RResult,
+};
 use rocket::{
     http::{CookieJar, Status},
     serde::json::Json,
@@ -8,7 +11,6 @@ use sea_orm::ActiveModelTrait;
 
 use crate::{
     data_containers::{
-        r_result::RResult,
         users::{UserLogin, UserNew},
         SelectBy,
     },
@@ -17,6 +19,8 @@ use crate::{
 };
 
 const COOKIE_NAME: &str = "User-Auth";
+
+mod illustrator;
 
 generate_controller!(
     UserController,
@@ -52,7 +56,6 @@ async fn user_login(
         }
     );
     cookies.add_private(uauth.into_cookie(COOKIE_NAME));
-    
     RResult::ok(info)
 }
 

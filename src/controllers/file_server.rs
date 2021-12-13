@@ -15,13 +15,11 @@ use rocket::{
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 
 use crate::{
-    data_containers::{
-        file_store::FileUpload, file_store::{ Files}, r_result::RResult, users::UserLogin,
-    },
+    data_containers::{file_store::FileUpload, file_store::Files, users::UserLogin},
     database::Database,
     entity::file_stores,
     to_rresult,
-    utils::config::Config,
+    utils::{config::Config, data_structs::r_result::RResult},
 };
 
 crate::generate_controller!(FileServerController, "/images", user_file, upload, uploads);
@@ -94,12 +92,12 @@ async fn uploads(
         "No User Id Found"
     );
     let fu = to_rresult!(rs, file, Status::UnprocessableEntity).into_inner();
-    log::info!("file counts {}",fu.files.len());
+    log::info!("file counts {}", fu.files.len());
     let mut res = Vec::with_capacity(fu.files.len());
     for f in fu.files {
         res.push(f.save(uid, &db, &config.consts).await);
         //res.push(RResult::ok(format!("{}",f.filename())))
     }
-    log::info!("{:?}",res);
+    log::info!("{:?}", res);
     RResult::ok(res)
 }

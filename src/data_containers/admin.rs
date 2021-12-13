@@ -3,7 +3,7 @@ use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 use crate::{
     database::Database,
     entity::admins,
-    utils::{crypto_string::CryptoString, RangeLimitString},
+    utils::data_structs::{crypto_string::CryptoString, RangeLimitString},
 };
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]

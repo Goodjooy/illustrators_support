@@ -1,6 +1,6 @@
 use crate::{
     entity::users,
-    utils::{crypto_string::CryptoString, RangeLimitString},
+    utils::data_structs::{crypto_string::CryptoString, RangeLimitString},
 };
 
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
@@ -39,7 +39,7 @@ impl SelectBy<entity::users::Model> for UserLogin {
 }
 #[async_trait]
 impl CheckExits for UserLogin {
-   async fn exist(&self, db: &crate::database::Database) -> Result<bool, sea_orm::DbErr> {
+    async fn exist(&self, db: &crate::database::Database) -> Result<bool, sea_orm::DbErr> {
         users::Entity::find()
             .filter(
                 Condition::all()

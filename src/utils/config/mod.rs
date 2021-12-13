@@ -1,4 +1,3 @@
-use lazy_static::__Deref;
 use serde::Deserialize;
 use std::ops::Deref;
 

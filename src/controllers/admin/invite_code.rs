@@ -1,11 +1,12 @@
 use crate::controllers::into_entity;
 use crate::data_containers::invite::CodeSimple;
+use crate::utils::data_structs::r_result::RResult;
 use rocket::http::Status;
 use rocket::{serde::json::Json, State};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
 use crate::data_containers::{
-    admin::Admin, invite::InviteCodeNew, r_result::RResult, TryIntoWithDatabase,
+    admin::Admin, invite::InviteCodeNew, TryIntoWithDatabase,
 };
 use crate::entity::invites;
 use crate::{to_rresult, Database};
