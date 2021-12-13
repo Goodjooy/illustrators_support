@@ -1,4 +1,4 @@
-use sea_orm::Set;
+use sea_orm::{ActiveValue, Set, Value};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -14,38 +14,23 @@ pub struct IllustratorOp {
     sponsor: Option<MaxLimitString<256>>,
 }
 
-impl IllustratorOp {
-    pub fn check_for_new(self) -> Option<IllustratorNew> {
-        if self.name.is_some()
-            && self.head.is_some()
-            && self.home.is_some()
-            && self.sponsor.is_some()
-        {
-            Some(IllustratorNew {
-                name: self.name.unwrap(),
-                head: self.head.unwrap(),
-                home: self.home.unwrap(),
-                sponsor: self.sponsor.unwrap(),
-            })
-        } else {
-            None
-        }
+fn set_value<V: Into<Value>, T, F>(src: &mut ActiveValue<V>, data: Option<T>, f: F)
+where
+    F: Fn(T) -> V,
+{
+    if let Some(data) = data {
+        *src = Set::<V>(f(data))
     }
+}
 
+impl IllustratorOp {
     pub fn mix_with_model(self, model: illustrators::Model) -> illustrators::ActiveModel {
         let mut am: illustrators::ActiveModel = model.into();
-        if let Some(name) = self.name {
-            am.name = Set(name.into());
-        }
-        if let Some(head) = self.head {
-            am.head = Set(head.into());
-        }
-        if let Some(home) = self.home {
-            am.home = Set(home.into());
-        }
-        if let Some(sponsor) = self.sponsor {
-            am.sponsor = Set(sponsor.into());
-        }
+
+        set_value(&mut am.name, self.name, |s| s.into());
+        set_value(&mut am.head, self.head, |f| f.into());
+        set_value(&mut am.home, self.home, |f| f.into());
+        set_value(&mut am.sponsor, self.sponsor, |f| f.into());
 
         am
     }
