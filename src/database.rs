@@ -4,13 +4,12 @@
  * @Last Modified by:   Your name
  * @Last Modified time: 2021-12-11 13:18:47
  */
-use crate::{data_containers::TryIntoWithDatabase, entity::invites};
+use crate::{data_containers::TryIntoWithDatabase, entity::invites, utils::config::{invite_code::DefaultInviteCodeConfig, database::DbConfig}};
 use log::info;
 use sea_orm::{ConnectOptions, DatabaseConnection, DbErr, EntityTrait};
 use std::error::Error;
 
 use crate::utils::{
-    config::{DbConfig, DefaultInviteCodeConfig},
     measureable::Measurable,
 };
 

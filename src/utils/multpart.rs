@@ -161,7 +161,6 @@ impl MultPartFile<'_> {
         let mut file = rocket::tokio::fs::File::create(filepath).await?;
 
         AsyncWriteExt::write_all(&mut file, &self.data).await?;
-        //let res = self.data.into_file(path.as_ref().join(filename)).await;
         Ok(file)
     }
     pub fn filename(&self) -> String {

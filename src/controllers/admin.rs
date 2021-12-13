@@ -13,8 +13,9 @@ use crate::{
     to_rresult,
 };
 
-mod opearte;
-mod views;
+mod invite_code;
+mod serve_image;
+mod illustrator;
 
 const ADMIN_COOKIE_NAME: &str = "Admin-Auth";
 
@@ -23,8 +24,14 @@ crate::generate_controller!(
     "/admin",
     new_admin,
     admin_login,
-    opearte::add_invite_code,
-    opearte::make_art_suti,
+    // invite code
+    invite_code::add_invite_code,
+    invite_code::get_all_invite_code,
+    invite_code::remove_invite_code,
+    // serve image
+    serve_image::make_art_suti,
+    // illustrator
+    illustrator::edit,
     // back handler
     no_user_auth_post,
     no_user_auth_get

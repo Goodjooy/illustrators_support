@@ -61,6 +61,7 @@ async fn new_illustrator(
 
     RResult::ok(res.last_insert_id)
 }
+
 #[post("/add_arts/<iid>", data = "<file>")]
 async fn add_art(
     _auth: UserLogin,

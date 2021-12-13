@@ -31,6 +31,24 @@ impl IllustratorOp {
             None
         }
     }
+
+    pub fn mix_with_model(self, model: illustrators::Model) -> illustrators::ActiveModel {
+        let mut am: illustrators::ActiveModel = model.into();
+        if let Some(name) = self.name {
+            am.name = Set(name.into());
+        }
+        if let Some(head) = self.head {
+            am.head = Set(head.into());
+        }
+        if let Some(home) = self.home {
+            am.home = Set(home.into());
+        }
+        if let Some(sponsor) = self.sponsor {
+            am.sponsor = Set(sponsor.into());
+        }
+
+        am
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]

@@ -74,3 +74,18 @@ impl SelectBy<invites::Model> for String {
             .await
     }
 }
+
+#[derive(Deserialize,Serialize)]
+pub struct CodeSimple{
+    pub id:i64,
+    pub value:String
+}
+
+impl From<invites::Model> for CodeSimple {
+    fn from(d: invites::Model) -> Self {
+        Self{
+            id: d.id,
+            value: d.code,
+        }
+    }
+}
