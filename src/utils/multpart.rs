@@ -1,21 +1,15 @@
-/**
- * @Author: Your name
- * @Date:   2021-12-03 18:28:05
- * @Last Modified by:   Your name
- * @Last Modified time: 2021-12-12 22:24:40
- */
-use rocket::{form::FromFormField, data::{FromData, ToByteUnit}, http::Status};
+use rocket::{
+    data::{FromData, ToByteUnit},
+    form::FromFormField,
+    http::Status,
+    tokio::io::AsyncWriteExt,
+};
 use std::path::Path;
 
-use rocket::{
-    data::{ByteUnit, Capped, DataStream, },
-    http::ContentType,
-    tokio::fs::File,
-    Data,
-};
+use rocket::{data::ByteUnit, http::ContentType, tokio::fs::File, Data};
 use uuid::Uuid;
 pub struct MultPartFile<'r> {
-    data: DataStream<'r>,
+    data: Vec<u8>,
     filename: String,
     file_ext: &'r str,
 }
@@ -99,8 +93,10 @@ impl MultPartFile<'_> {
         } else {
             return None;
         };
+        let innerdata = data.open(limit);
+        let data = innerdata.into_bytes().await.ok()?.into_inner();
         let res = MultPartFile::<'r> {
-            data: data.open(limit),
+            data,
             filename: Uuid::new_v4().to_string(),
             file_ext: file_ext,
         };
@@ -132,7 +128,12 @@ impl<'r> FromData<'r> for MultPartFile<'r> {
 #[rocket::async_trait]
 impl<'v> FromFormField<'v> for MultPartFile<'v> {
     async fn from_data(field: rocket::form::DataField<'v, '_>) -> rocket::form::Result<'v, Self> {
-        log::info!("loading form field {} | {:?}",&field.content_type,&field.file_name);
+        log::info!(
+            "loading form field data {} | {:?} | {}",
+            &field.content_type,
+            &field.file_name,
+            &field.name.as_name()
+        );
 
         let limlt = field
             .request
@@ -152,10 +153,16 @@ impl<'v> FromFormField<'v> for MultPartFile<'v> {
 }
 
 impl MultPartFile<'_> {
-    pub async fn save_to<P: AsRef<Path>>(self, path: P) -> std::io::Result<Capped<File>> {
+    pub async fn save_to<P: AsRef<Path>>(self, path: P) -> std::io::Result<File> {
         let filename = self.filename();
-        let res = self.data.into_file(path.as_ref().join(filename)).await;
-        res
+        let filepath = path.as_ref().join(filename);
+
+        log::info!("Saving file to {}", filepath.as_path().to_string_lossy());
+        let mut file = rocket::tokio::fs::File::create(filepath).await?;
+
+        AsyncWriteExt::write_all(&mut file, &self.data).await?;
+        //let res = self.data.into_file(path.as_ref().join(filename)).await;
+        Ok(file)
     }
     pub fn filename(&self) -> String {
         format!("{}.{}", self.filename, self.file_ext())

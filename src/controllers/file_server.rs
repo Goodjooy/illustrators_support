@@ -97,8 +97,8 @@ async fn uploads(
     log::info!("file counts {}",fu.files.len());
     let mut res = Vec::with_capacity(fu.files.len());
     for f in fu.files {
-        //res.push(f.save(uid, &db, &config.consts).await);
-        res.push(RResult::ok(format!("{}",f.filename())))
+        res.push(f.save(uid, &db, &config.consts).await);
+        //res.push(RResult::ok(format!("{}",f.filename())))
     }
     log::info!("{:?}",res);
     RResult::ok(res)

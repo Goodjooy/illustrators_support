@@ -178,7 +178,7 @@ async fn want_illustrator(auth: UserLogin, id: i64, db: &State<Database>) -> RRe
             iid: Set(ill.id),
             ..Default::default()
         };
-        to_rresult!(rs, want.insert(db.unwarp()).await);
+        to_rresult!(rs, want.save(db.unwarp()).await);
         RResult::ok("添加想要成功".to_string())
     } else {
         RResult::err("目标画师不存在")
