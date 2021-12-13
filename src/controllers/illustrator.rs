@@ -169,17 +169,33 @@ async fn illustrator_detial(
 
 #[post("/<id>")]
 async fn want_illustrator(auth: UserLogin, id: i64, db: &State<Database>) -> RResult<String> {
+    let uid = to_rresult!(op, auth.id, "Bad Auth");
     if let Some(ill) = to_rresult!(
         rs,
         illustrators::Entity::find_by_id(id).one(db.unwarp()).await
     ) {
-        let want = illustrator_wants::ActiveModel {
-            uid: Set(to_rresult!(op, auth.id, "Bad Auth")),
-            iid: Set(ill.id),
-            ..Default::default()
-        };
-        to_rresult!(rs, want.save(db.unwarp()).await);
-        RResult::ok("添加想要成功".to_string())
+        let res = to_rresult!(
+            rs,
+            illustrator_wants::Entity::find()
+                .filter(
+                    sea_orm::Condition::all()
+                        .add(illustrator_wants::Column::Uid.eq(uid))
+                        .add(illustrator_wants::Column::Iid.eq(id))
+                )
+                .one(db.unwarp()).await
+        );
+
+        if let None = res {
+            let want = illustrator_wants::ActiveModel {
+                uid: Set(uid),
+                iid: Set(ill.id),
+                ..Default::default()
+            };
+            to_rresult!(rs, want.save(db.unwarp()).await);
+            RResult::ok("添加想要成功".to_string())
+        } else {
+            RResult::err("你已经添加过了")
+        }
     } else {
         RResult::err("目标画师不存在")
     }
