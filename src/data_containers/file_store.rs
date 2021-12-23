@@ -8,6 +8,7 @@ use std::path::Path;
 
 use rocket::http::Status;
 use sea_orm::{ActiveModelTrait, Set};
+use serde::Deserialize;
 
 use crate::{
     database::Database,
@@ -59,4 +60,16 @@ impl FileUpload<'_> {
             RResult::status_err(Status::UnprocessableEntity, "Expect src but not provide")
         }
     }
+}
+
+#[derive(Deserialize)]
+pub struct FileRemove{
+    pub files:Vec<String>
+}
+
+#[derive(serde::Serialize)]
+pub enum FileStatus {
+    NotInDatabase,
+    NotInLocal,
+    Exist,
 }
