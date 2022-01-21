@@ -14,7 +14,7 @@ use rocket::{
 };
 use serde::{ser::SerializeStruct, Serialize};
 #[derive(Debug)]
-pub enum RResult<T: Serialize> {
+pub enum RResult<T> {
     Success(T),
     Error(Status, String),
 }
@@ -41,7 +41,7 @@ impl<T: Serialize> Serialize for RResult<T> {
     }
 }
 
-impl<T: Serialize> RResult<T> {
+impl<T> RResult<T> {
     fn new_success(data: T) -> Self {
         info!("into RResult Success");
         Self::Success(data)
@@ -91,19 +91,19 @@ impl<T: Serialize> RResult<T> {
     }
 }
 
-impl<T: Serialize, E: Error> From<Result<T, E>> for RResult<T> {
+impl<T, E: Error> From<Result<T, E>> for RResult<T> {
     fn from(r: Result<T, E>) -> Self {
         Self::from_result(r)
     }
 }
 
-impl<T: Serialize> From<Option<T>> for RResult<T> {
+impl<T> From<Option<T>> for RResult<T> {
     fn from(op: Option<T>) -> Self {
         Self::from_option(op, "None Result".to_string())
     }
 }
 
-impl<T: Serialize> Into<Result<T, String>> for RResult<T> {
+impl<T> Into<Result<T, String>> for RResult<T> {
     fn into(self) -> Result<T, String> {
         match self {
             RResult::Success(data) => Ok(data),
@@ -111,7 +111,7 @@ impl<T: Serialize> Into<Result<T, String>> for RResult<T> {
         }
     }
 }
-impl<T: Serialize> Into<Option<T>> for RResult<T> {
+impl<T> Into<Option<T>> for RResult<T> {
     fn into(self) -> Option<T> {
         match self {
             RResult::Success(data) => Some(data),

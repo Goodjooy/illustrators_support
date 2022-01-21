@@ -14,7 +14,10 @@ use figment::{
     Figment,
 };
 use utils::{
-    mid_wares::{auth_switch::AuthSwitch, cors::Cors, net_logging::NetLogger}, config::Config, cors_handle, data_structs::lifetime_hashmap::LifeTimeHashMap,
+    config::Config,
+    cors_handle,
+    data_structs::{lifetime_hashmap::LifeTimeMap, user_auth::Auth},
+    mid_wares::{auth_switch::AuthSwitch, cors::Cors, net_logging::NetLogger},
 };
 #[macro_use]
 extern crate rocket;
@@ -58,7 +61,7 @@ async fn launch() -> _ {
         .manage(database)
         .manage(config.clone())
         .manage(std::sync::Mutex::new(HashMap::<String, i64>::new()))
-        .manage(LifeTimeHashMap::<String, i64>::new())
+        .manage(LifeTimeMap::<String, Auth>::new())
         // rounts
         .mount("/", rocket::routes![cors_handle])
         .mount(FileServerController::base(), FileServerController::routes())

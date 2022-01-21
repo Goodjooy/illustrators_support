@@ -1,4 +1,5 @@
 use std::{
+    borrow::Borrow,
     cmp::Ordering,
     collections::{BinaryHeap, HashMap},
     hash::Hash,
@@ -6,8 +7,11 @@ use std::{
     time::{Duration, Instant},
 };
 
+use chrono::Utc;
+use dashmap::DashMap;
+
 struct TimeOrd<T> {
-    t: Instant,
+    t: u64,
     data: Arc<T>,
 }
 
@@ -43,26 +47,28 @@ impl<T> PartialOrd for TimeOrd<T> {
     }
 }
 
-pub struct LifeTimeHashMap<K, V>
-where
-    K: Eq + Hash,
-{
-    pq: Mutex<BinaryHeap<TimeOrd<K>>>,
-    data: Mutex<HashMap<Arc<K>, V>>,
+fn get_now() -> u64 {
+    let now = Utc::now();
+    now.timestamp() as u64
 }
 
-impl<K: Eq + Hash, V> LifeTimeHashMap<K, V> {
+pub struct LifeTimeMap<K, V> {
+    pq: Mutex<BinaryHeap<TimeOrd<K>>>,
+    data: DashMap<Arc<K>, V>,
+}
+
+impl<K: Eq + Hash, V> LifeTimeMap<K, V> {
     pub fn new() -> Self {
-        LifeTimeHashMap {
+        LifeTimeMap {
             pq: Mutex::new(BinaryHeap::new()),
-            data: Mutex::new(HashMap::new()),
+            data: DashMap::new(),
         }
     }
     fn updata_map(&self) -> Result<(), String> {
         let mut pq = self.pq.lock().or_else(|e| Err(e.to_string()))?;
-        let mut map = self.data.lock().or_else(|e| Err(e.to_string()))?;
+        let map = &self.data;
 
-        let now = Instant::now();
+        let now = get_now();
         loop {
             if let Some(t) = pq.peek() {
                 if &t.t < &now {
@@ -79,44 +85,43 @@ impl<K: Eq + Hash, V> LifeTimeHashMap<K, V> {
         Ok(())
     }
 
-    pub fn get(&self, key: &K) -> Option<V>
+    pub fn get_pop(&self, key: &K) -> Option<V>
     where
-        V: Clone,
+        K: Hash + Eq,
     {
         self.updata_map().expect("Updata map Error");
-        self.data.lock().ok()?.get(key).map(|v| v.clone())
+        self.data.remove(key).and_then(|(_k, v)| Some(v))
     }
 
     pub fn insert(&self, key: K, value: V, lifetime: Duration) -> Option<V> {
         let key = Arc::new(key);
         let time_ord = TimeOrd {
-            t: Instant::now() + lifetime,
+            t: get_now() + lifetime.as_secs(),
             data: Arc::clone(&key),
         };
 
         let mut pq = self.pq.lock().ok()?;
-        let mut map = self.data.lock().ok()?;
+        let map = &self.data;
 
         pq.push(time_ord);
         map.insert(Arc::clone(&key), value)
     }
 }
 
-
 #[cfg(test)]
-mod test{
+mod test {
     use super::*;
     #[test]
     fn test_death_data() {
-        let t=LifeTimeHashMap::new();
+        let t = LifeTimeMap::new();
         t.insert(1, 2, Duration::from_secs(2));
         t.insert(12, 22, Duration::from_secs(2));
         t.insert(13, 23, Duration::from_secs(2));
+        std::thread::sleep(Duration::from_secs(1));
+        assert_eq!(Some(2), t.get_pop(&1));
+        std::thread::sleep(Duration::from_secs(3));
 
-        std::thread::sleep(Duration::from_secs(4));
-
-        assert_eq!(None,t.get(&1));
-        assert_eq!(None,t.get(&12));
-        assert_eq!(None,t.get(&13));
+        assert_eq!(None, t.get_pop(&12));
+        assert_eq!(None, t.get_pop(&13));
     }
 }
