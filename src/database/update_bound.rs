@@ -16,14 +16,14 @@ impl Deref for TableName {
 }
 
 impl TableName {
-    pub const USERS: Self = Self("users");
-    pub const FILE_STORES: Self = Self("file_stores");
-    pub const ILLUSTRATORS: Self = Self("illustrators");
-    pub const ILLUSTRATOR_WANTS: Self = Self("illustrator_wants");
-    pub const ILLUSTRATOR_ACTS: Self = Self("illustrator_acts");
-    pub const ADMINS: Self = Self("admins");
-    pub const INVITES: Self = Self("invites");
-    pub const UPDATE_RECORD: Self = Self("update_record");
+    pub const USERS: Option<Self> = Some(Self("users"));
+    pub const FILE_STORES: Option<Self> = Some(Self("file_stores"));
+    pub const ILLUSTRATORS: Option<Self> = Some(Self("illustrators"));
+    pub const ILLUSTRATOR_WANTS: Option<Self> = Some(Self("illustrator_wants"));
+    pub const ILLUSTRATOR_ACTS: Option<Self> = Some(Self("illustrator_acts"));
+    pub const ADMINS: Option<Self> = Some(Self("admins"));
+    pub const INVITES: Option<Self> = Some(Self("invites"));
+    pub const UPDATE_RECORD: Option<Self> = Some(Self("update_record"));
 }
 
 pub trait UpdateRecordBound {
