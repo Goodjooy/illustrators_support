@@ -8,18 +8,22 @@ use crate::{
     data_containers::{
         arts::{ArtNew, ArtSaved},
         illustrator::{Illustrator, IllustratorNew, IllustratorTItle},
+        update_record::LastUpdate,
         users::UserLogin,
     },
-    database::Database,
+    database::{
+        update_bound::{TableName, UpdateRecordBound},
+        Database,
+    },
     entity::{file_stores, illustrator_acts, illustrator_wants, illustrators, users},
     to_rresult,
-    utils::data_structs::{r_result::RResult, MaxLimitString},
+    utils::data_structs::{header_info::HeaderInfo, r_result::RResult, MaxLimitString},
 };
 
 use rocket::{http::Status, serde::json::Json, State};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, QuerySelect, RelationTrait,
-    Set,
+    sea_query::IntoCondition, ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter,
+    QuerySelect, QueryTrait, RelationTrait, Set,
 };
 
 crate::generate_controller!(
@@ -105,10 +109,29 @@ async fn add_art(
 }
 
 #[get("/all")]
-async fn illustrator_all(_auth: UserLogin, db: &State<Database>) -> RResult<Vec<IllustratorTItle>> {
+async fn illustrator_all(
+    _auth: UserLogin,
+    db: &State<Database>,
+    record: HeaderInfo<'_, LastUpdate>,
+) -> RResult<Vec<IllustratorTItle>> {
+    let record = record.try_into().ok();
     let res = to_rresult!(
         rs,
         illustrators::Entity::find()
+            // thouse code for record time bound
+            .filter(
+                Condition::all()
+                    .add(Condition::all().ext_record_bound(
+                        &illustrators::Column::Id,
+                        TableName::ILLUSTRATORS,
+                        record.clone()
+                    ))
+                    .add(Condition::all().ext_record_bound(
+                        &illustrator_wants::Column::Id,
+                        TableName::ILLUSTRATOR_WANTS,
+                        record
+                    ))
+            )
             .find_with_related(illustrator_wants::Entity)
             .all(db.unwarp())
             .await
@@ -122,7 +145,9 @@ async fn illustrator_detial(
     _auth: UserLogin,
     id: i64,
     db: &State<Database>,
+    record: HeaderInfo<'_, LastUpdate>,
 ) -> RResult<Illustrator> {
+    let record = record.try_into().ok();
     let (ill_src, arts) = to_rresult!(
         op,
         to_rresult!(
@@ -137,6 +162,11 @@ async fn illustrator_detial(
                     illustrator_acts::Relation::FileStores.def(),
                 )
                 .select_with(file_stores::Entity)
+                .filter(Condition::all().ext_record_bound(
+                    &file_stores::Column::Id,
+                    TableName::FILE_STORES,
+                    record.clone()
+                ))
                 .all(db.unwarp())
                 .await
         )
@@ -149,7 +179,16 @@ async fn illustrator_detial(
     let wants = to_rresult!(
         rs,
         illustrator_wants::Entity::find()
-            .filter(illustrator_wants::Column::Iid.eq(id))
+            .filter(
+                illustrator_wants::Column::Iid
+                    .eq(id)
+                    .into_condition()
+                    .ext_record_bound(
+                        &illustrator_wants::Column::Id,
+                        TableName::ILLUSTRATOR_WANTS,
+                        record
+                    )
+            )
             .all(db.unwarp())
             .await
     );
