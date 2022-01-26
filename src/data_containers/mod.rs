@@ -1,5 +1,4 @@
-use chrono::NaiveDateTime;
-use lazy_static::__Deref;
+
 /**
  * @Author: Your name
  * @Date:   2021-12-10 08:54:36
@@ -7,7 +6,7 @@ use lazy_static::__Deref;
  * @Last Modified time: 2021-12-11 14:01:56
  */
 use rocket::http::Cookie;
-use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, QuerySelect};
+
 use std::ops::Deref;
 
 use serde::Serialize;
@@ -96,33 +95,4 @@ impl Deref for TableName {
     fn deref(&self) -> &Self::Target {
         &self.0
     }
-}
-
-#[derive(sea_orm::FromQueryResult, Debug)]
-struct Data {
-    cid: i64,
-}
-
-pub async fn load_change_record(
-    table_name: Option<TableName>,
-    db: &Database,
-    record_time: NaiveDateTime,
-) -> Result<Vec<i64>, sea_orm::DbErr> {
-    use crate::entity::update_record;
-
-    let mut condition = Condition::all().add(update_record::Column::ChangeTime.gt(record_time));
-    if let Some(table_name) = table_name {
-        condition = condition.add(update_record::Column::TableName.eq(table_name.deref()));
-    }
-
-    let res = update_record::Entity::find()
-        .select_only()
-        .column_as(update_record::Column::ChangeId, "cid")
-        .filter(condition)
-        .into_model::<Data>()
-        .all(db.unwarp())
-        .await
-        .and_then(|v| Ok(v.into_iter().map(|d| d.cid).collect()));
-
-    res
 }

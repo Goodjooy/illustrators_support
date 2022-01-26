@@ -1,4 +1,4 @@
-use crate::{data_containers::load_change_record, to_rresult, Database};
+use crate::{ to_rresult, Database};
 
 use rocket::{http::Status, State};
 
@@ -14,8 +14,7 @@ async fn check_uptated(update: HeaderInfo<'_, LastUpdate>, db: &State<Database>)
         .get_one()
         .and_then(|h| chrono::NaiveDateTime::parse_from_str(h, "%Y-%m-%d %H:%M:%S").ok())
     {
-        let newer = to_rresult!(rs, load_change_record(None, db, time).await);
-        if newer.len() > 0 {
+        if false {
             RResult::ok(())
         } else {
             RResult::status_err(Status::NotModified, "All are the newest")

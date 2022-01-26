@@ -16,6 +16,8 @@ use log::info;
 use sea_orm::{ConnectOptions, DatabaseConnection, DbErr, EntityTrait};
 use std::error::Error;
 
+pub mod update_bound;
+
 pub struct Database {
     db: DatabaseConnection,
 }
