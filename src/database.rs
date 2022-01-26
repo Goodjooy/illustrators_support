@@ -4,14 +4,26 @@
  * @Last Modified by:   Your name
  * @Last Modified time: 2021-12-11 13:18:47
  */
-use crate::{data_containers::TryIntoWithDatabase, entity::invites, utils::{config::{invite_code::DefaultInviteCodeConfig, database::DbConfig}, data_structs::measureable::Measurable}};
+use crate::{
+    data_containers::TryIntoWithDatabase,
+    entity::invites,
+    utils::{
+        config::{database::DbConfig, invite_code::DefaultInviteCodeConfig},
+        data_structs::measureable::Measurable,
+    },
+};
 use log::info;
 use sea_orm::{ConnectOptions, DatabaseConnection, DbErr, EntityTrait};
 use std::error::Error;
 
-
 pub struct Database {
     db: DatabaseConnection,
+}
+
+impl From<DatabaseConnection> for Database {
+    fn from(db: DatabaseConnection) -> Self {
+        Self { db }
+    }
 }
 
 impl AsRef<DatabaseConnection> for Database {
@@ -36,7 +48,9 @@ impl Database {
         let min_conn = db_config.min_conn;
 
         let mut ops = ConnectOptions::new(db_url);
-        ops.max_connections(max_conn).min_connections(min_conn).sqlx_logging(db_config.db_log);
+        ops.max_connections(max_conn)
+            .min_connections(min_conn)
+            .sqlx_logging(db_config.db_log);
 
         let db = sea_orm::Database::connect(ops).await?;
 
@@ -51,12 +65,11 @@ impl Database {
         &self,
         code_config: DefaultInviteCodeConfig,
     ) -> Result<(), DbErr> {
-
         info!("Adding init invite code to database");
         let mut res = Vec::with_capacity(code_config.codes.size());
 
         for code in code_config.codes {
-            info!( "adding invite code to databse {}", &code);
+            info!("adding invite code to databse {}", &code);
             let re = code.try_into_with_db(&self).await;
             if let Ok(r) = re {
                 res.push(r);

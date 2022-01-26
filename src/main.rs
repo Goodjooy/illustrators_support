@@ -7,7 +7,9 @@
 use crate::controllers::{file_server::FileServerController, illustrator::IllustratorController};
 use std::collections::HashMap;
 
-use controllers::{admin::AdminController, user::UserController, Controller};
+use controllers::{
+    admin::AdminController, update_record::UpdateRecordController, user::UserController, Controller,
+};
 use database::Database;
 use figment::{
     providers::{Format, Toml},
@@ -71,6 +73,10 @@ async fn launch() -> _ {
             IllustratorController::routes(),
         )
         .mount(AdminController::base(), AdminController::routes())
+        .mount(
+            UpdateRecordController::base(),
+            UpdateRecordController::routes(),
+        )
         //err catch
         .register("/", catchers![utils::catch])
 }
