@@ -8,4 +8,5 @@ pub mod illustrator_acts;
 pub mod illustrator_wants;
 pub mod illustrators;
 pub mod invites;
+pub mod update_record;
 pub mod users;

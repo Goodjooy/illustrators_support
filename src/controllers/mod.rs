@@ -4,6 +4,7 @@ pub mod admin;
 pub mod file_server;
 pub mod illustrator;
 pub mod user;
+pub mod update_record;
 
 pub trait Controller {
     fn routes() -> Vec<rocket::Route> {

@@ -6,4 +6,5 @@ pub use super::illustrator_acts::Entity as IllustratorActs;
 pub use super::illustrator_wants::Entity as IllustratorWants;
 pub use super::illustrators::Entity as Illustrators;
 pub use super::invites::Entity as Invites;
+pub use super::update_record::Entity as UpdateRecord;
 pub use super::users::Entity as Users;
