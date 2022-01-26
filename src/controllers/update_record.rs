@@ -1,4 +1,10 @@
-use crate::{ to_rresult, Database};
+use crate::{
+    data_containers::{
+        update_record::{LastUpdate, RecordUnit},
+        SelectBy,
+    },
+    to_rresult, Database,
+};
 
 use rocket::{http::Status, State};
 
@@ -6,16 +12,13 @@ use crate::utils::data_structs::{header_info::HeaderInfo, r_result::RResult};
 
 crate::generate_controller!(UpdateRecordController, "/update", check_uptated);
 
-crate::header_captures!(pub LastUpdate : "Last-Update");
-
 #[post("/check")]
-async fn check_uptated(update: HeaderInfo<'_, LastUpdate>, db: &State<Database>) -> RResult<()> {
-    if let Some(time) = update
-        .get_one()
-        .and_then(|h| chrono::NaiveDateTime::parse_from_str(h, "%Y-%m-%d %H:%M:%S").ok())
-    {
-        if false {
-            RResult::ok(())
+async fn check_uptated(update: HeaderInfo<'_, LastUpdate>, db: &State<Database>) -> RResult<usize> {
+    if let Some(time) = update.try_into().ok() {
+        let rec = RecordUnit(time);
+
+        if let Some(count) = to_rresult!(rs, rec.select_by(db).await) {
+            RResult::ok(count)
         } else {
             RResult::status_err(Status::NotModified, "All are the newest")
         }

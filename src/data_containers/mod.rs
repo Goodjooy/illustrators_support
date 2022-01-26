@@ -19,6 +19,7 @@ pub mod file_store;
 pub mod illustrator;
 pub mod invite;
 pub mod users;
+pub mod update_record;
 #[rocket::async_trait]
 pub trait SelectBy<T> {
     async fn select_by(self, db: &Database) -> Result<Option<T>, sea_orm::DbErr>;

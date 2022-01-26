@@ -43,12 +43,7 @@ impl UpdateRecordBound for Condition {
         record: Option<NaiveDateTime>,
     ) -> Condition {
         if let Some(record) = record {
-            let mut condition = Condition::all().add(update_record::Column::ChangeTime.gt(record));
-
-            // 如果不指定table name 就是全部更新历史
-            if let Some(table_name) = table_name {
-                condition = condition.add(update_record::Column::TableName.eq(table_name.deref()));
-            }
+            let condition = record_condition(table_name, record);
             Condition::all().add(self).add(
                 column.in_subquery(
                     Query::select()
@@ -62,4 +57,15 @@ impl UpdateRecordBound for Condition {
             self
         }
     }
+}
+
+pub fn record_condition(table_name: Option<TableName>, record: NaiveDateTime) -> Condition {
+    let mut condition = Condition::all().add(update_record::Column::ChangeTime.gt(record));
+
+    // 如果不指定table name 就是全部更新历史
+    if let Some(table_name) = table_name {
+        condition = condition.add(update_record::Column::TableName.eq(table_name.deref()));
+    }
+
+    condition
 }
