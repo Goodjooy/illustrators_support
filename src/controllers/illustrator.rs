@@ -23,7 +23,7 @@ use crate::{
 use rocket::{http::Status, serde::json::Json, State};
 use sea_orm::{
     sea_query::IntoCondition, ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter,
-    QuerySelect, QueryTrait, RelationTrait, Set,
+    QuerySelect, RelationTrait, Set,
 };
 
 crate::generate_controller!(
@@ -185,7 +185,7 @@ async fn illustrator_detial(
                     .into_condition()
                     .ext_record_bound(
                         &illustrator_wants::Column::Id,
-                        TableName::ILLUSTRATOR_WANTS,
+                        Into::<TableName>::into(&illustrator_wants::Entity).into_op(),
                         record
                     )
             )

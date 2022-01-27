@@ -1,10 +1,9 @@
 use std::{
-    borrow::Borrow,
     cmp::Ordering,
-    collections::{BinaryHeap, HashMap},
+    collections::BinaryHeap,
     hash::Hash,
     sync::{Arc, Mutex},
-    time::{Duration, Instant},
+    time::Duration,
 };
 
 use chrono::Utc;

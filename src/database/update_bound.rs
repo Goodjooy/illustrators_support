@@ -5,9 +5,9 @@ use sea_orm::{sea_query::Query, ColumnTrait, Condition};
 
 use crate::entity::update_record;
 
-pub struct TableName(pub &'static str);
+pub struct TableName<'s>(pub &'s str);
 
-impl Deref for TableName {
+impl<'s> Deref for TableName<'s> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
@@ -15,7 +15,20 @@ impl Deref for TableName {
     }
 }
 
-impl TableName {
+impl<'s, T> From<&'s T> for TableName<'s>
+where
+    T: sea_orm::EntityName + sea_orm::EntityTrait,
+{
+    fn from(en: &'s T) -> Self {
+        TableName(en.table_name())
+    }
+}
+
+impl<'s> TableName<'s> {
+    pub fn into_op(self) -> Option<Self> {
+        Some(self)
+    }
+
     pub const USERS: Option<Self> = Some(Self("users"));
     pub const FILE_STORES: Option<Self> = Some(Self("file_stores"));
     pub const ILLUSTRATORS: Option<Self> = Some(Self("illustrators"));

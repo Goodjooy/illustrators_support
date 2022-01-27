@@ -28,8 +28,10 @@ crate::generate_controller!(
     invite_code::remove_invite_code,
     // serve image
     serve_image::make_art_suti,
+    serve_image::remove_arts,
     // illustrator
     illustrator::edit,
+    illustrator::remove,
     // back handler
     no_user_auth_post,
     no_user_auth_get
